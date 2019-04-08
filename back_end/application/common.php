@@ -10,3 +10,13 @@
 // +----------------------------------------------------------------------
 
 // 应用公共文件
+
+const CODE_SUCCESS = 0 , CODE_ERROR = 1;
+
+function apiReturn($code,$message,$data,$http_code=200) {
+    return json([
+        'code'=>$code,
+        'message'=>$message,
+        'data'=>$data
+    ],$http_code);
+}

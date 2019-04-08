@@ -9,16 +9,19 @@ namespace app\index\validate;
 
 use think\Validate;
 
-class LoginValidate extends Validate {
+class UserValidate extends Validate {
     protected $rule = [
-
+        'username' => 'require|length:8',
+        'password'=>'require',
     ];
 
     protected $message = [
-
+        'username.require'=>'账号必须',
+        'username.length'=>'账号长度必须是8位',
+        'password.require'=>'密码必须'
     ];
 
     protected $scene = [
-        
+        'login'=>['username','password'],
     ];
 }
