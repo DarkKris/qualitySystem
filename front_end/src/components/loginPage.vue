@@ -17,6 +17,7 @@
 </template>
 
 <script>
+    import axios from "axios";
     export default {
         name: "login-page",
         data() {
@@ -61,6 +62,24 @@
                     }
                 });
             }
+        },
+        mounted() {
+            axios({
+                method: 'post',
+                url: 'http://localhost:8888/qualitySystem/back_end/public/index/Login/checkLogin',
+                data: {}
+            }).then(function(response) {
+                if(response.data.data === false) {
+
+                }else{
+                    if(response.data.data === 'admin')
+                        this.$router.push();
+                    else
+                        this.$router.push();
+                }
+            }).catch(function(error) {
+                console.log(error);
+            });
         }
     }
 </script>
