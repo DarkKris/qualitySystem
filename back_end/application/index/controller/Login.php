@@ -16,13 +16,9 @@ class Login extends Controller {
     public function checkLogin() {
         if(\Session::has('user_id')) {
             $user_model = new UserModel();
-            $result = $user_model->isAdmin(session('user_id'));
+            $result = $user_model->selectUser(session('user_id'));
             if($result['code']==CODE_SUCCESS){
-                if($result['data']){
-                    return apiReturn(200,'ok','admin');
-                }else{
-                    return apiReturn(200,'ok','not-admin');
-                }
+                return apiReturn(200,'ok',$result['data']);
             }else{
                 return apiReturn(500,$result['message'], $result['data']);
             }
@@ -54,5 +50,4 @@ class Login extends Controller {
         session(null);
         return apiReturn(200,'ok',null);
     }
-
 }

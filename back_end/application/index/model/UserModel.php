@@ -40,4 +40,13 @@ class UserModel extends Model {
             return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
         }
     }
+
+    public function selectUser($user_id) {
+        try {
+            $info = $this->where('user_id',$user_id)->find();
+            return ['code'=>CODE_SUCCESS, 'message'=>'OK', 'data'=>$info];
+        }catch(Exception $e) {
+            return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
+        }
+    }
 }
