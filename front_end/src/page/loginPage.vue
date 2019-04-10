@@ -27,7 +27,7 @@
 </template>
 
 <script>
-    import TopNav from "./TopNav";
+    import TopNav from "../components/TopNav";
     import { login,checkLogin } from "../api/getData"
 
     export default {

@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-import LoginPage from './components/loginPage'
-import adminPage from './components/adminPage'
-import workerPage from './components/workerPage'
+import LoginPage from '../page/loginPage'
+import adminPage from '../page/adminPage'
+import workerPage from '../page/workerPage'
 
 Vue.use(VueRouter);
 
