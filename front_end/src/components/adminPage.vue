@@ -1,10 +1,12 @@
 <template>
-    $END$
+    <div class="admin-page">
+
+    </div>
 </template>
 
 <script>
     export default {
-        name: "admin"
+        name: "admin-page"
     }
 </script>
 
