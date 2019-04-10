@@ -44,7 +44,7 @@ class Login extends Controller {
         if($result['code']==CODE_SUCCESS) {
             session('user_id',$result['data']['user_id']);
             session('username',$result['data']['username']);
-            return apiReturn(200,'登录成功',null);
+            return apiReturn(200,'登录成功',$result['data']);
         }else{
             return apiReturn(403,'账号或密码输入错误，请重新输入。',null);
         }

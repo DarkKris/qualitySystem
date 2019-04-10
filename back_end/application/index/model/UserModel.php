@@ -20,11 +20,11 @@ class UserModel extends Model {
             $result = $this->where([
                 'username' => $username,
                 'password' => $hash_password
-            ])->find();
+            ])->field('password',true)->find();
             if($result) {
                 return ['code'=>CODE_SUCCESS, 'message'=>'OK', 'data'=>$result];
             }else{
-                return ['code'=>CODE_SUCCESS, 'message'=>'OK', 'data'=>null];
+                return ['code'=>CODE_ERROR, 'message'=>'failed', 'data'=>null];
             }
         }catch(Exception $e){
             return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
@@ -33,8 +33,8 @@ class UserModel extends Model {
 
     public function isAdmin($user_id) {
         try {
-            $info = $this->where('user_id')->find();
-            if ($info['admin'] == true) return ['code'=>CODE_SUCCESS, 'message'=>'OK', 'data'=>true];
+            $info = $this->where('user_id',$user_id)->find();
+            if ($info['admin']) return ['code'=>CODE_SUCCESS, 'message'=>'OK', 'data'=>true];
             else return ['code'=>CODE_SUCCESS, 'message'=>'OK', 'data'=>false];
         }catch(Exception $e) {
             return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
