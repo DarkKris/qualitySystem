@@ -4,6 +4,8 @@ import VueRouter from 'vue-router'
 import LoginPage from '../page/loginPage'
 import adminPage from '../page/adminPage'
 import workerPage from '../page/workerPage'
+import handoutCasePage from '../page/handoutCasePage'
+import completeCasePage from '../page/completeCasePage'
 
 Vue.use(VueRouter);
 
@@ -14,7 +16,17 @@ const routes = [
     },
     {
         path: "/admin",
-        component: adminPage
+        component: adminPage,
+        children: [
+            {
+                path: "handoutCase",
+                component: handoutCasePage
+            },
+            {
+                path: "completeCase",
+                component: completeCasePage
+            }
+        ]
     },
     {
         path: "/worker",

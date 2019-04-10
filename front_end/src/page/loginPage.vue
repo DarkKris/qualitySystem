@@ -63,7 +63,7 @@
                         { validator: validatePass, trigger: 'blur' }
                     ]
                 },
-                username: '未命名',
+                username: '未登录',
             };
         },
         methods: {
@@ -90,13 +90,11 @@
             checklogin: async function() {
                 const res = await checkLogin();
                 if(res.code === 200 && res.data!==false) {
-                    if(res.data === 'admin') {
+                    if(res.data.admin === 1) {
                         this.$router.push('admin');
                     }else{
                         this.$router.push('worker');
                     }
-                }else{
-                    console.log(res);
                 }
             }
         },

@@ -11,3 +11,9 @@ export const login = data => fetch('/Login/login', 'post', data);
  */
 
 export const checkLogin = () => fetch('/Login/checkLogin', 'get');
+
+/**
+ * 注销用户
+ */
+
+export const logout = () => fetch('/Login/logout', 'get');

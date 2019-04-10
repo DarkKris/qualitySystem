@@ -6,15 +6,23 @@
                 <img src="">
             </div>
             <span class="user-name">{{ userName }}</span>
-            <a class="logout" v-if="userName != '未命名'" onclick="">退出</a>
+            <a class="logout" v-if="userName != '未登录'" @click="logout()">退出</a>
         </div>
     </div>
 </template>
 
 <script>
+    import { logout } from '../api/getData';
+
     export default {
         name: "top-nav",
-        props: ['userName']
+        props: ['userName'],
+        methods: {
+            logout: async function() {
+                await logout();
+                this.$router.push('/login');
+            }
+        }
     }
 </script>
 
@@ -29,6 +37,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        z-index: 1000;
     }
 
     .logout {
