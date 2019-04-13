@@ -6,6 +6,7 @@ import adminPage from '../page/adminPage'
 import workerPage from '../page/workerPage'
 import handoutCasePage from '../page/handoutCasePage'
 import completeCasePage from '../page/completeCasePage'
+import caseInfoPage from '../page/caseInfoPage'
 
 Vue.use(VueRouter);
 
@@ -35,6 +36,10 @@ const routes = [
     {
         path: "/",
         redirect: '/login'
+    },
+    {
+        path: "/caseInfo/:id",
+        component: caseInfoPage
     }
 ];
 

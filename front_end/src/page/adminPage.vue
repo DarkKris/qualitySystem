@@ -54,7 +54,7 @@
                         this.$router.push('worker');
                     }
                 }else{
-                    this.$router.replace('login');
+                    this.$router.push('/login');
                 }
             },
             redirectTo: function() {
@@ -99,8 +99,9 @@
         background-color: unset !important;
     }
 
-    .is-active {
-        border-left: 4px #658beb solid!important;
+    .aside .is-active {
+        border-left: 4px #658beb solid !important;
+        background-color: rgb(226,237,252) !important;
     }
 
     .main {
