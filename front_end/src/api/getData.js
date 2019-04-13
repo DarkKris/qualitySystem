@@ -17,3 +17,21 @@ export const checkLogin = () => fetch('/Login/checkLogin', 'get');
  */
 
 export const logout = () => fetch('/Login/logout', 'get');
+
+/**
+ * 获取case聊天记录
+ */
+
+export const getCaseMsg = data => fetch('/Case/getCaseMsg', 'post', data);
+
+/**
+ * 获取case信息
+ */
+
+export const getCaseInfo = data => fetch('/Case/getCaseInfo', 'post', data);
+
+/**
+ * 获取case成绩信息
+ */
+
+export const getCaseGrade = data => fetch('/Case/getCaseGrade', 'post', data);

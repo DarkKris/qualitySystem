@@ -106,12 +106,11 @@
 
 <style>
     .login-page {
+        overflow-y: hidden;
         display: flex;
         justify-content: center;
-        align-items: center;
         width: 100%;
-        height: 100%;
-        margin-top: 40px;
+        padding-top: 6%;
     }
 
     .login-from {
@@ -142,5 +141,9 @@
 
     .el-form .el-button {
         padding: 8px 20px !important;
+    }
+
+    ::-webkit-scrollbar{
+        width:0;
     }
 </style>

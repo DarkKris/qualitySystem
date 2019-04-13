@@ -8,6 +8,7 @@
                     <div
                             class="case-message"
                             v-for="key in caseMessages"
+                            v-bind:key="key"
                             :class="key.type === 'user'?'user-message':'service-message'"
                     >
                         <span class="message-title">{{key.username}}&nbsp;&nbsp;&nbsp;{{key.time}}</span>
@@ -92,6 +93,7 @@
 </template>
 
 <script>
+    import { checkLogin, getCaseMsg, getCaseInfo, getCaseGrade } from '../api/getData'
     import topNav from '../components/TopNav'
 
     export default {
@@ -219,6 +221,29 @@
                     pinpoint: 20,
                     quickhandle: 30
                 }
+            }
+        },
+        mounted() {
+            this.checklogin();
+            // this.getContent();
+        },
+        methods: {
+            checklogin: async function() {
+                const res = await checkLogin();
+                if(res.code === 200 && res.data!==false) {
+                    if(res.data.admin === 1) {
+                        this.username = res.data.usernick;
+                    }else{
+                        this.$router.push('worker');
+                    }
+                }else{
+                    this.$router.push('/login');
+                }
+            },
+            getContent: async function() {
+                const msgResp = await getCaseMsg({case_id: this.case_id});
+                const infoResp = await getCaseInfo({case_id: this.case_id});
+                const gradeResp = await getCaseGrade({case_id: this.case_id});
             }
         },
         computed: {
