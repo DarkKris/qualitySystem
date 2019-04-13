@@ -204,13 +204,13 @@
                     case_id: '12345678',
                     creater: 'testName',
                     workline: 'workline',
-                    createTime: '2018.11.11 12:00:10',
+                    createTime: '2018.11.11',
                     beTestTeam: 'beTestTeam',
                     testWorker: 'testWorker',
                     beTestWorker: 'beTestWorker',
-                    testFinal: 'testFinal',
+                    testFinal: '— —',
                     commentFinal: 'commentFinal',
-                    testGrade: 'testGrade',
+                    testGrade: '— —',
                     saleQues: 'saleQuestion',
                     workerType: 'workerType'
                 },
@@ -231,11 +231,7 @@
             checklogin: async function() {
                 const res = await checkLogin();
                 if(res.code === 200 && res.data!==false) {
-                    if(res.data.admin === 1) {
-                        this.username = res.data.usernick;
-                    }else{
-                        this.$router.push('worker');
-                    }
+                    this.username = res.data.usernick;
                 }else{
                     this.$router.push('/login');
                 }
@@ -410,11 +406,13 @@
     .case-grade-table tr:last-child .title{
         font-size: 1em;
         text-align: right;
+        border-top: 2px solid rgb(240,240,240);
     }
 
     .case-grade-table tr:last-child td{
         font-size: 1.2em;
         padding-left: 30px;
+        border-top: 2px solid rgb(240,240,240);
     }
 
     ::-webkit-scrollbar{
