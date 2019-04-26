@@ -1,35 +1,37 @@
 <template>
-    <el-container id="admin-page">
-        <el-header>
-            <top-nav :user-name="username"></top-nav>
-        </el-header>
-        <el-container class="el-container">
-            <el-aside width="200px">
-                <div class="aside">
-                    <el-menu
-                            :default-active="defaultActive"
-                            background-color="#f0f7fe"
-                            text-color="#696969"
-                            active-text-color="#658beb"
-                            router
-                            style="margin-top: 10px;border-right: unset !important;"
-                    >
-                        <el-menu-item index="handoutCase">
-                            分配质检单
-                        </el-menu-item>
-                        <el-menu-item index="completeCase">
-                            完结质检单
-                        </el-menu-item>
-                    </el-menu>
-                </div>
-            </el-aside>
-            <el-main>
-                <keep-alive>
-                    <router-view class="main"></router-view>
-                </keep-alive>
-            </el-main>
+    <div>
+        <el-container id="admin-page">
+            <el-header>
+                <top-nav :user-name="username" />
+            </el-header>
+            <el-container class="el-container">
+                <el-aside width="200px">
+                    <div class="aside">
+                        <el-menu
+                                :default-active="defaultActive"
+                                background-color="#f0f7fe"
+                                text-color="#696969"
+                                active-text-color="#658beb"
+                                router
+                                style="margin-top: 10px;border-right: unset !important;"
+                        >
+                            <el-menu-item index="handoutCase">
+                                分配质检单
+                            </el-menu-item>
+                            <el-menu-item index="completeCase">
+                                完结质检单
+                            </el-menu-item>
+                        </el-menu>
+                    </div>
+                </el-aside>
+                <el-main>
+                    <keep-alive>
+                        <router-view class="main" />
+                    </keep-alive>
+                </el-main>
+            </el-container>
         </el-container>
-    </el-container>
+    </div>
 </template>
 
 <script>
@@ -51,7 +53,7 @@
                     if(res.data.admin === 1) {
                         this.username = res.data.usernick;
                     }else{
-                        this.$router.push('worker');
+                        this.$router.push('/worker');
                     }
                 }else{
                     this.$router.push('/login');
@@ -60,7 +62,7 @@
             redirectTo: function() {
                 if(this.$route.path === '/admin')
                     this.$router.push('/admin/handoutCase');
-            }
+            },
         },
         mounted() {
             this.checklogin();
@@ -115,5 +117,22 @@
         padding: 0 10px 20px 10px;
 
         z-index: 0;
+    }
+
+    .dialog {
+        border-radius: 8px;
+    }
+    
+    .dialog .el-form-item__label {
+        text-align: right !important;
+        /*margin-right: 30px;*/
+    }
+
+    .dialog .el-select {
+        width: 300px !important;
+    }
+
+    .handout-children {
+        margin-left: 10px;
     }
 </style>

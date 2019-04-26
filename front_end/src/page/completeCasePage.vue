@@ -1,9 +1,11 @@
 <template>
     <div class="complete-page">
         <el-row type="flex" align="middle" class="search-bar" justify="start">
-            <span>ID查询</span>
-            <el-input type="text" placeholder="请输入完整质检单ID"></el-input>
-            <el-button type="primary">搜索</el-button>
+            <el-col :span="1"><span class="search-bar-title">ID查询</span></el-col>
+            <el-col :span="4"><el-input type="text" placeholder="请输入完整质检单ID" /></el-col>
+            <el-col :span="19" style="margin-right: 20px;">
+                <el-button type="primary" id="search-button">搜索</el-button>
+            </el-col>
         </el-row>
 
         <div class="case-list">

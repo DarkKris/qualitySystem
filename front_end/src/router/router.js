@@ -5,7 +5,7 @@ import LoginPage from '../page/loginPage'
 import adminPage from '../page/adminPage'
 import workerPage from '../page/workerPage'
 import handoutCasePage from '../page/handoutCasePage'
-import completeCasePage from '../page/completeCasePage'
+// import completeCasePage from '../page/completeCasePage'
 import caseInfoPage from '../page/caseInfoPage'
 
 Vue.use(VueRouter);
@@ -25,7 +25,7 @@ const routes = [
             },
             {
                 path: "completeCase",
-                component: completeCasePage
+                component: handoutCasePage
             }
         ]
     },

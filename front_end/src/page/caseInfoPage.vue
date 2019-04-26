@@ -50,42 +50,68 @@
                 </div>
                 <div class="case-grade-info">
                     <span class="case-info-title">质检打分</span>
-                    <table class="case-grade-table" cellspacing="0">
-                        <tr>
-                            <th>打分项</th>
-                            <th>得分</th>
-                        </tr>
+                    <div v-if="admin === true || hasComplete === true">
+                        <table class="case-grade-table" cellspacing="0">
+                            <tr>
+                                <th>打分项</th>
+                                <th>得分</th>
+                            </tr>
 
-                        <tr>
-                            <td class="normal">礼仪规范</td>
-                            <td class="digital">{{caseGrade.ceremony}}</td>
-                        </tr>
+                            <tr>
+                                <td class="normal">礼仪规范</td>
+                                <td class="digital">{{caseGrade.ceremony}}</td>
+                            </tr>
 
-                        <tr>
-                            <td class="normal">系统操作规范</td>
-                            <td class="digital">{{caseGrade.sysopt}}</td>
-                        </tr>
+                            <tr>
+                                <td class="normal">系统操作规范</td>
+                                <td class="digital">{{caseGrade.sysopt}}</td>
+                            </tr>
 
-                        <tr>
-                            <td class="normal">信息传递规范</td>
-                            <td class="digital">{{caseGrade.messagetrans}}</td>
-                        </tr>
+                            <tr>
+                                <td class="normal">信息传递规范</td>
+                                <td class="digital">{{caseGrade.messagetrans}}</td>
+                            </tr>
 
-                        <tr>
-                            <td class="normal">精准定位问题</td>
-                            <td class="digital">{{caseGrade.pinpoint}}</td>
-                        </tr>
+                            <tr>
+                                <td class="normal">精准定位问题</td>
+                                <td class="digital">{{caseGrade.pinpoint}}</td>
+                            </tr>
 
-                        <tr>
-                            <td class="normal">快速处理问题</td>
-                            <td class="digital">{{caseGrade.quickhandle}}</td>
-                        </tr>
+                            <tr>
+                                <td class="normal">快速处理问题</td>
+                                <td class="digital">{{caseGrade.quickhandle}}</td>
+                            </tr>
 
-                        <tr>
-                            <td class="title">质检得分</td>
-                            <td>{{totalGrade}}</td>
-                        </tr>
-                    </table>
+                            <tr>
+                                <td class="title">质检得分</td>
+                                <td>{{ totalGrade }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div v-else>
+                        <el-form>
+                            <el-form-item label="礼仪规范" label-width="100px">
+                                <el-input-number v-model="caseGrade.ceremony"       :min="0" :max="10" label="礼仪规范"     ref="number1"/>
+                            </el-form-item>
+                            <el-form-item label="系统操作规范" label-width="100px">
+                                <el-input-number v-model="caseGrade.sysopt"         :min="0" :max="20" label="系统操作规范"  ref="number2"/>
+                            </el-form-item>
+                            <el-form-item label="信息传递规范" label-width="100px">
+                                <el-input-number v-model="caseGrade.messagetrans"   :min="0" :max="20" label="信息传递规范"  ref="number3"/>
+                            </el-form-item>
+                            <el-form-item label="精准定位问题" label-width="100px">
+                                <el-input-number v-model="caseGrade.pinpoint"       :min="0" :max="20" label="精准定位问题"  ref="number4"/>
+                            </el-form-item>
+                            <el-form-item label="快速处理问题" label-width="100px">
+                                <el-input-number v-model="caseGrade.quickhandle"    :min="0" :max="30" label="快速处理问题"  ref="number5"/>
+                            </el-form-item>
+                            <el-form-item style="display: flex;">
+                                <el-button type="primary">提交，并下一条</el-button>
+                                <el-button plain>提交，回列表</el-button>
+                                <el-button plain>重置</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
                 </div>
             </el-col>
         </el-row>
@@ -101,6 +127,8 @@
         components: { topNav },
         data() {
             return {
+                admin: false,
+                hasComplete: false,
                 username: '未登录',
                 caseMessages: [
                     {
@@ -225,6 +253,7 @@
         },
         mounted() {
             this.checklogin();
+            this.$refs.number1.focus()
             // this.getContent();
         },
         methods: {
@@ -232,6 +261,7 @@
                 const res = await checkLogin();
                 if(res.code === 200 && res.data!==false) {
                     this.username = res.data.usernick;
+                    this.admin = res.data.admin;
                 }else{
                     this.$router.push('/login');
                 }
@@ -253,7 +283,7 @@
     }
 </script>
 
-<style scoped>
+<style>
     .case-info-page {
         display: flex;
         justify-content: flex-start;
@@ -417,5 +447,10 @@
 
     ::-webkit-scrollbar{
         width:0;
+    }
+
+    .el-form-item__label {
+        text-align: right !important;
+        margin-right: 10px;
     }
 </style>
