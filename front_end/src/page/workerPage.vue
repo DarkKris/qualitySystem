@@ -58,7 +58,7 @@
                                 >
                                 </el-table-column>
                             </el-table>
-                            <el-row class="list-footer">
+                            <div class="list-footer">
                                 <span>共 {{ total }} 条</span>
                                 <el-pagination
                                         :current-page.sync="currentPage"
@@ -66,7 +66,7 @@
                                         layout="prev, pager, next, jumper"
                                         :total="total"
                                 />
-                            </el-row>
+                            </div>
                         </div>
                     </div>
                 </el-main>
@@ -122,11 +122,5 @@
     .worker-list-content {
         padding: 30px 10px 0 10px;
         height: 73%;
-    }
-
-    .list-footer {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
     }
 </style>

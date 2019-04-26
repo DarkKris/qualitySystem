@@ -91,19 +91,19 @@
                     <div v-else>
                         <el-form>
                             <el-form-item label="礼仪规范" label-width="100px">
-                                <el-input-number v-model="caseGrade.ceremony"       :min="0" :max="10" label="礼仪规范"     ref="number1"/>
+                                <el-input-number v-model="caseGrade.ceremony"       :min="0" :max="10" label="礼仪规范"     name="number1" ref="number1" style="width: 200px;" @keyup.enter.native="onEnter(1)"/>
                             </el-form-item>
                             <el-form-item label="系统操作规范" label-width="100px">
-                                <el-input-number v-model="caseGrade.sysopt"         :min="0" :max="20" label="系统操作规范"  ref="number2"/>
+                                <el-input-number v-model="caseGrade.sysopt"         :min="0" :max="20" label="系统操作规范"  name="number2" ref="number2" style="width: 200px;" @keyup.enter.native="onEnter(2)"/>
                             </el-form-item>
                             <el-form-item label="信息传递规范" label-width="100px">
-                                <el-input-number v-model="caseGrade.messagetrans"   :min="0" :max="20" label="信息传递规范"  ref="number3"/>
+                                <el-input-number v-model="caseGrade.messagetrans"   :min="0" :max="20" label="信息传递规范"  name="number3" ref="number3" style="width: 200px;" @keyup.enter.native="onEnter(3)"/>
                             </el-form-item>
                             <el-form-item label="精准定位问题" label-width="100px">
-                                <el-input-number v-model="caseGrade.pinpoint"       :min="0" :max="20" label="精准定位问题"  ref="number4"/>
+                                <el-input-number v-model="caseGrade.pinpoint"       :min="0" :max="20" label="精准定位问题"  name="number4" ref="number4" style="width: 200px;" @keyup.enter.native="onEnter(4)"/>
                             </el-form-item>
                             <el-form-item label="快速处理问题" label-width="100px">
-                                <el-input-number v-model="caseGrade.quickhandle"    :min="0" :max="30" label="快速处理问题"  ref="number5"/>
+                                <el-input-number v-model="caseGrade.quickhandle"    :min="0" :max="30" label="快速处理问题"  name="number5" ref="number5" style="width: 200px;" @keyup.enter.native="onEnter(5)"/>
                             </el-form-item>
                             <el-form-item style="display: flex;">
                                 <el-button type="primary">提交，并下一条</el-button>
@@ -270,6 +270,32 @@
                 const msgResp = await getCaseMsg({case_id: this.case_id});
                 const infoResp = await getCaseInfo({case_id: this.case_id});
                 const gradeResp = await getCaseGrade({case_id: this.case_id});
+            },
+            onEnter: function(num) {
+                let name = 'number'+num;
+
+                switch(name)
+                {
+                    // 聚焦到下一个NumberSelector
+                    case 'number1':
+                        this.$refs.number2.focus();
+                        break;
+                    case 'number2':
+                        this.$refs.number3.focus();
+                        break;
+                    case 'number3':
+                        this.$refs.number4.focus();
+                        break;
+                    case 'number4':
+                        this.$refs.number5.focus();
+                        break;
+                    case 'number5':
+                        // TODO 触发"提交，下一个单子"按钮事件
+                        break;
+                    default:
+                        console.log(name);
+                        break;
+                }
             }
         },
         computed: {
@@ -278,6 +304,17 @@
             },
             totalGrade: function() {
                 return this.caseGrade.ceremony+this.caseGrade.sysopt+this.caseGrade.messagetrans+this.caseGrade.pinpoint+this.caseGrade.quickhandle;
+            },
+            testFinal: function() {
+                if(!this.admin && !this.hasComplete)
+                    return '————';
+                let total = this.totalGrade();
+                if(total<60) {
+                    return '不合格';
+                }else{
+                    return '合格';
+                }
+                return '————';
             }
         }
     }

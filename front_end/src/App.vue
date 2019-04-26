@@ -29,4 +29,11 @@ export default {
         width: 100%;
         height: 100%;
     }
+
+    /*禁用input type=number css style*/
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button
+    {
+        display: none;
+    }
 </style>

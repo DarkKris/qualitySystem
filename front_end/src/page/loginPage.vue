@@ -6,16 +6,16 @@
         <el-container>
             <el-main style="height: 100%;">
                 <div class="login-page">
-                    <div class="login-from">
-                        <div class="from-content">
-                            <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
-                                <el-form-item label="账号" prop="username" class="input-label" label-width="70px">
-                                    <el-input type="text" v-model="ruleForm.username" autocomplete="off" placeholder="请输入8位数账号" maxlength="8"></el-input>
+                    <div class="login-form">
+                        <div class="form-content">
+                            <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="68px" class="form-content">
+                                <el-form-item label="账号" prop="username" class="input-label" label-width="68px">
+                                    <el-input type="text" v-model="ruleForm.username" autocomplete="off" placeholder="请输入8位数账号" maxlength="8" style="width: 300px"/>
                                 </el-form-item>
-                                <el-form-item label="密码" prop="password" class="input-label" label-width="70px">
-                                    <el-input type="password" v-model="ruleForm.password" autocomplete="off" placeholder="请输入密码"></el-input>
+                                <el-form-item label="密码" prop="password" class="input-label" label-width="68px">
+                                    <el-input type="password" v-model="ruleForm.password" autocomplete="off" placeholder="请输入密码" style="width: 300px"/>
                                 </el-form-item>
-                                <el-button type="primary" @click="submitForm('ruleForm')" style="width: 100%">登  录</el-button>
+                                <el-button type="primary" @click="submitForm('ruleForm')" style="width: 378px">登  录</el-button>
                             </el-form>
                         </div>
                     </div>
@@ -91,15 +91,15 @@
                 const res = await checkLogin();
                 if(res.code === 200 && res.data!==false) {
                     if(res.data.admin === 1) {
-                        this.$router.push('admin');
+                        this.$router.push('/admin');
                     }else{
-                        this.$router.push('worker');
+                        this.$router.push('/worker');
                     }
                 }
             }
         },
         mounted() {
-            // this.checklogin();
+            this.checklogin();
         }
     }
 </script>
@@ -113,10 +113,11 @@
         padding-top: 6%;
     }
 
-    .login-from {
+    .login-form {
+        padding-left: 13px;
         background: white;
         height: 230px;
-        width: 530px;
+        width: 550px;
         border-radius: 2px;
         border: 1px solid rgba(0,0,0,0.1);
         display: flex;
@@ -124,18 +125,18 @@
         align-items: center;
     }
 
-    .from-content {
+    .form-content {
         height: 150px;
-        width: 370px;
+        width: 400px;
         margin-top: 10px;
         margin-bottom: 20px;
     }
 
-    .el-form-item__label {
+    .login-form .el-form-item__label {
         text-align: left !important;
     }
 
-    .el-input >input {
+    .login-form .form-content .el-input >input {
         height: 33px !important;
     }
 

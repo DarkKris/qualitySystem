@@ -118,21 +118,4 @@
 
         z-index: 0;
     }
-
-    .dialog {
-        border-radius: 8px;
-    }
-    
-    .dialog .el-form-item__label {
-        text-align: right !important;
-        /*margin-right: 30px;*/
-    }
-
-    .dialog .el-select {
-        width: 300px !important;
-    }
-
-    .handout-children {
-        margin-left: 10px;
-    }
 </style>

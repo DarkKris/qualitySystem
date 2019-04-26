@@ -2,7 +2,7 @@
     <div class="handout-page">
         <el-row type="flex" align="middle" class="search-bar" justify="start">
             <el-col :span="1"><span class="search-bar-title">ID查询</span></el-col>
-            <el-col :span="4"><el-input type="text" placeholder="请输入完整质检单ID" style="margin-left:20px;"/></el-col>
+            <el-col :span="4"><el-input type="number" placeholder="请输入完整质检单ID" style="margin-left:20px;" v-model="searchID"/></el-col>
             <el-col :span="19" id="buttons-group">
                 <el-button type="primary" id="search-button">搜索</el-button>
                 <el-button
@@ -16,7 +16,7 @@
             </el-col>
         </el-row>
         <div class="case-list">
-            <div class="list-filter">
+            <div class="list-filter" v-if="filter.visible">
                 <el-form
                         label-width="90px"
                 >
@@ -132,20 +132,15 @@
                     >
                     </el-table-column>
                 </el-table>
-                <el-row class="list-footer">
-                    <el-col :span="3" style="margin-top: 3px;">
-                        <span>共 {{ total }} 条</span>
-                    </el-col>
-                    <el-col :span="12">&nbsp;</el-col>
-                    <el-col :span="9">
-                        <el-pagination
-                                :current-page.sync="currentPage"
-                                :page-size="10"
-                                layout="prev, pager, next, jumper"
-                                :total="total"
-                        />
-                    </el-col>
-                </el-row>
+                <div class="list-footer" v-if="filter.visible">
+                    <span>共 {{ total }} 条</span>
+                    <el-pagination
+                            :current-page.sync="currentPage"
+                            page-size="10"
+                            layout="prev, pager, next, jumper"
+                            :total="total"
+                    />
+                </div>
             </div>
         </div>
 
@@ -197,7 +192,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="数量" :label-width="dialog.width" style="margin-top: 50px;">
-                        <el-input v-model="dialog.name" autocomplete="off" placeholder="请输入数量，不得超过case总数" style="width: 300px;"/>
+                        <el-input type="number" v-model="dialog.name" autocomplete="off" placeholder="请输入数量，不得超过case总数" style="width: 300px;"/>
                         <el-popover
                                 placement="right"
                                 width="100"
@@ -213,7 +208,7 @@
                         </el-popover>
                     </el-form-item>
                     <el-form-item label="分配方式" :label-width="dialog.width">
-                        <el-select v-model="dialog.handoutType">
+                        <el-select v-model="dialog.handoutType" style="width: 200px !important;">
                             <el-option label="平均分配" value="0" />
                             <el-option label="手动分配" value="1" />
                         </el-select>
@@ -221,9 +216,9 @@
                             <!--平均分配-->
                             <div v-if="dialog.handoutType==0">
                                 <!-- TODO select-->
-                                <el-select v-model="value5" multiple placeholder="请选择质检员">
+                                <el-select v-model="dialog.handoutWorker" multiple placeholder="请选择质检员" style="width: 350px !important;">
                                     <el-option
-                                    v-for="item in options"
+                                    v-for="item in workers"
                                     :key="item.value"
                                     :label="item.label"
                                     :value="item.value">
@@ -232,15 +227,15 @@
                             </div>
                             <!--手动分配-->
                             <div v-else>
-                                <div v-for="(item,index) in dialog.handoutData" style="display: flex" :key="index">
+                                <div v-for="(item,index) in dialog.handoutData" style="display: flex;margin:5px 0;" :key="index">
                                     <el-select v-model="item.worker_id" placeholder="请选择质检员">
                                         <el-option label="test" value="0"/>
                                     </el-select>
-                                    <span>&nbsp;分配&nbsp;</span>
-                                    <el-input v-modl="item.caseNum" style="width: 60px;"/>
-                                    <span>&nbsp;单</span>
+                                    <span style="margin-left: 15px;margin-right: 5px;">分配</span>
+                                    <el-input type="number" v-modl="item.caseNum" style="width: 60px;"/>
+                                    <span style="margin-left: 5px;">单</span>
                                 </div>
-                                <el-button @click="addArrs" plain>增加</el-button>
+                                <el-button @click="addArrs" plain style="margin-top: 15px;">增加</el-button>
                             </div>
                         </div>
                     </el-form-item>
@@ -259,7 +254,9 @@
         name: "handout-case-page",
         data() {
             return {
+                searchID: '',
                 filter: {
+                    visible: true,
                     workline: '',
                     beTestTeam: '',
                     createUser: '',
@@ -305,6 +302,7 @@
                     problemType: '0',
                     serviceType: '0',
                     handoutType: '0',
+                    handoutWorker: [],
                     handoutData: [
                         {
                             'worker_id': '',
@@ -313,7 +311,8 @@
                     ]
                 },
                 caseTotal: 100,
-                loading: true
+                loading: true,
+                workers: null
             }
         },
         methods: {
@@ -336,6 +335,25 @@
             },
             addArrs: function() {
                 this.dialog.handoutData.push({'worker_id':'','caseNum':0});
+            },
+            resetDialog: function() {
+                this.dialog = {
+                    width: '101px',
+                    visible: false,
+                    workLine: '0',
+                    beTestingCompany: '0',
+                    commentCompany: ["1","0","-1"],
+                    problemType: '0',
+                    serviceType: '0',
+                    handoutType: '0',
+                    handoutWorker: [],
+                    handoutData: [
+                        {
+                            'worker_id': '',
+                            'caseNum': 0
+                        }
+                    ]
+                }
             }
         },
     }
@@ -348,6 +366,15 @@
 
     .handout-page {
         color: rgb(90,90,90);
+    }
+
+    .handout-page .el-input >input {
+        height: 33px !important;
+    }
+
+    .handout-page .search-bar .el-button {
+        height: 33px !important;
+        line-height: 0;
     }
 
     .search-bar {
@@ -394,17 +421,26 @@
     }
 
     .list-filter {
-        padding: 20px;
+        padding: 20px 20px 0 20px;
     }
 
     .list-content {
         height: calc(92% - 132px);
         margin: 10px;
+        padding-top: 20px;
     }
 
     .list-footer {
         margin-top: 10px;
         margin-left: 5px;
+        display: flex;
+        justify-content: space-between;
+        flex-flow: row nowrap;
+        width: 100%;
+    }
+
+    .list-filter .el-col {
+        height: 50px !important;
     }
 
     .el-date-editor {
@@ -425,7 +461,21 @@
         margin-left: 90px;
     }
 
-    .list-filter .el-col {
-        height: 50px !important;
+    .dialog {
+        border-radius: 8px;
+    }
+
+    .dialog .el-form-item__label {
+        text-align: right !important;
+        /*margin-right: 30px;*/
+    }
+
+    .dialog .el-select {
+        width: 300px !important;
+    }
+
+    .handout-children {
+        margin-left: 10px;
+        margin-top: 5px;
     }
 </style>
