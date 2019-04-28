@@ -22,16 +22,47 @@ export const logout = () => fetch('/Login/logout', 'get');
  * 获取case聊天记录
  */
 
-export const getCaseMsg = data => fetch('/Case/getCaseMsg', 'post', data);
+export const getCaseMsg = data => fetch('/CaseController/getCaseMsg', 'post', data);
 
 /**
  * 获取case信息
  */
 
-export const getCaseInfo = data => fetch('/Case/getCaseInfo', 'post', data);
+export const getCaseInfo = data => fetch('/CaseController/getCaseInfo', 'post', data);
 
 /**
  * 获取case成绩信息
+ * @param data
+ * @returns {Promise<*>}
  */
 
-export const getCaseGrade = data => fetch('/Case/getCaseGrade', 'post', data);
+export const getCaseGrade = data => fetch('/CaseController/getCaseGrade', 'post', data);
+
+/**
+ * 根据筛选条件获取case数
+ * @param data
+ * @returns {Promise<*>}
+ */
+
+export const getFilterCount = data => fetch('/CaseController/filterCount', 'post', data);
+
+/**
+ * 获取被质检团队列表
+ * @returns {Promise<*>}
+ */
+
+export const getBeTestTeam = () => fetch('/CaseController/getBeTestTeam', 'get');
+
+/**
+ * 获取质检员列表
+ * @returns {Promise<*>}
+ */
+
+export const getTestWorker = () => fetch('/CaseController/getTestWorker','get');
+
+/**
+ * 获取创建人列表
+ * @returns {Promise<*>}
+ */
+
+export const getCreater = () => fetch('/CaseController/getCreater','get');

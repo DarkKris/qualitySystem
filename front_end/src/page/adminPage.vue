@@ -25,9 +25,7 @@
                     </div>
                 </el-aside>
                 <el-main>
-                    <keep-alive>
-                        <router-view class="main" />
-                    </keep-alive>
+                    <router-view class="main" />
                 </el-main>
             </el-container>
         </el-container>

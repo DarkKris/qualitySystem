@@ -2,7 +2,7 @@
     <div class="handout-page">
         <el-row type="flex" align="middle" class="search-bar" justify="start">
             <el-col :span="1"><span class="search-bar-title">ID查询</span></el-col>
-            <el-col :span="4"><el-input type="number" placeholder="请输入完整质检单ID" style="margin-left:20px;" v-model="searchID"/></el-col>
+            <el-col :span="4"><el-input type="number" placeholder="请输入完整质检单ID" style="margin-left:20px;" v-model="searchID" clearable="true"/></el-col>
             <el-col :span="19" id="buttons-group">
                 <el-button type="primary" id="search-button">搜索</el-button>
                 <el-button
@@ -24,8 +24,9 @@
                         <el-col :span="8">
                             <el-form-item label="业务线">
                                 <el-select v-model="filter.workline">
-                                    <el-option label="区域一" value="shanghai"></el-option>
-                                    <el-option label="区域二" value="beijing"></el-option>
+                                    <el-option label="全部" value="0" />
+                                    <el-option label="在线" value="1" />
+                                    <el-option label="热线" value="2" />
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -33,8 +34,8 @@
                         <el-col :span="8">
                             <el-form-item label="被质检团队">
                                 <el-select v-model="filter.beTestTeam">
-                                    <el-option label="区域一" value="shanghai"></el-option>
-                                    <el-option label="区域二" value="beijing"></el-option>
+                                    <el-option label="全部" value="0" />
+                                    <el-option v-for="item in initData.be_test_team" :label="item.be_test_team" :value="item.be_test_team" />
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -42,8 +43,8 @@
                         <el-col :span="8">
                             <el-form-item label="创建人">
                                 <el-select v-model="filter.createUser">
-                                    <el-option label="区域一" value="shanghai"></el-option>
-                                    <el-option label="区域二" value="beijing"></el-option>
+                                    <el-option label="全部" value="0" />
+                                    <el-option v-for="item in initData.creater" :label="item.nickname" :value="item.created_user" />
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -51,10 +52,10 @@
 
                     <el-row align="middle">
                         <el-col :span="8">
-                            <el-form-item label="质检团队">
-                                <el-select v-model="filter.testTeam">
-                                    <el-option label="区域一" value="shanghai"></el-option>
-                                    <el-option label="区域二" value="beijing"></el-option>
+                            <el-form-item label="质检员">
+                                <el-select v-model="filter.testWorker">
+                                    <el-option label="全部" value="0" />
+                                    <el-option v-for="item in initData.test_worker" :label="item.nickname" :value="item.worker_id" />
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -98,7 +99,6 @@
                             label="序号"
                             width="100%"
                     >
-                        <!-- TODO -->
                     </el-table-column>
                     <el-table-column
                             prop="name"
@@ -133,12 +133,12 @@
                     </el-table-column>
                 </el-table>
                 <div class="list-footer" v-if="filter.visible">
-                    <span>共 {{ total }} 条</span>
+                    <span>共 {{ caseTotal }} 条</span>
                     <el-pagination
                             :current-page.sync="currentPage"
                             page-size="10"
                             layout="prev, pager, next, jumper"
-                            :total="total"
+                            :total="caseTotal"
                     />
                 </div>
             </div>
@@ -155,26 +155,27 @@
             >
                 <el-form :model="dialog">
                     <el-form-item label="业务线" :label-width="dialog.width">
-                        <el-select v-model="dialog.workLine">
+                        <el-select v-model="dialog.work_line">
                             <el-option label="全部" value="0" />
                             <el-option label="在线" value="1" />
                             <el-option label="热线" value="2" />
                         </el-select>
                     </el-form-item>
                     <el-form-item label="被质检单位" :label-width="dialog.width">
-                        <el-select v-model="dialog.beTestingCompany">
+                        <el-select v-model="dialog.be_test_team">
                             <el-option label="全部" value="0" />
+                            <el-option v-for="item in initData.be_test_team" :label="item.be_test_team" :value="item.be_test_team" />
                         </el-select>
                     </el-form-item>
                     <el-form-item label="评价结果" :label-width="dialog.width">
-                        <el-select v-model="dialog.commentCompany" multiple placeholder="请选择评价结果">
+                        <el-select v-model="dialog.comment_result" multiple placeholder="请选择评价结果">
                             <el-option label="满意" value="1" />
                             <el-option label="一般" value="0" />
                             <el-option label="不满意" value="-1" />
                         </el-select>
                     </el-form-item>
                     <el-form-item label="问题类型" :label-width="dialog.width">
-                        <el-select v-model="dialog.problemType">
+                        <el-select v-model="dialog.problem_type">
                             <el-option label="全部" value="0" />
                             <el-option label="售后问题" value="1" />
                             <el-option label="运费问题" value="2" />
@@ -183,7 +184,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="客服类型" :label-width="dialog.width">
-                        <el-select v-model="dialog.serviceType">
+                        <el-select v-model="dialog.service_type">
                             <el-option label="全部" value="0" />
                             <el-option label="活动客服" value="1" />
                             <el-option label="假货客服" value="2" />
@@ -202,13 +203,13 @@
                                     v-loading="loading"
                                     element-loading-background="rgba(255,255,255)"
                             >
-                                <span>筛选总数：{{caseTotal}}</span>
+                                <span>筛选总数：{{filterTotal}}</span>
                             </div>
                             <a slot="reference" style="margin-left: 20px;font-size:14px;color:#4a90e2;" @click="popoverCount">查看case总数</a>
                         </el-popover>
                     </el-form-item>
                     <el-form-item label="分配方式" :label-width="dialog.width">
-                        <el-select v-model="dialog.handoutType" style="width: 200px !important;">
+                        <el-select v-model="dialog.handout_type" style="width: 200px !important;">
                             <el-option label="平均分配" value="0" />
                             <el-option label="手动分配" value="1" />
                         </el-select>
@@ -216,7 +217,7 @@
                             <!--平均分配-->
                             <div v-if="dialog.handoutType==0">
                                 <!-- TODO select-->
-                                <el-select v-model="dialog.handoutWorker" multiple placeholder="请选择质检员" style="width: 350px !important;">
+                                <el-select v-model="dialog.handout_worker" multiple placeholder="请选择质检员" style="width: 350px !important;">
                                     <el-option
                                     v-for="item in workers"
                                     :key="item.value"
@@ -227,12 +228,12 @@
                             </div>
                             <!--手动分配-->
                             <div v-else>
-                                <div v-for="(item,index) in dialog.handoutData" style="display: flex;margin:5px 0;" :key="index">
+                                <div v-for="(item,index) in dialog.handout_data" style="display: flex;margin:5px 0;" :key="index">
                                     <el-select v-model="item.worker_id" placeholder="请选择质检员">
                                         <el-option label="test" value="0"/>
                                     </el-select>
                                     <span style="margin-left: 15px;margin-right: 5px;">分配</span>
-                                    <el-input type="number" v-modl="item.caseNum" style="width: 60px;"/>
+                                    <el-input type="number" v-model="item.caseNum" style="width: 60px;"/>
                                     <span style="margin-left: 5px;">单</span>
                                 </div>
                                 <el-button @click="addArrs" plain style="margin-top: 15px;">增加</el-button>
@@ -250,6 +251,8 @@
 </template>
 
 <script>
+    import { getFilterCount, getBeTestTeam, getTestWorker, getCreater } from "../api/getData";
+
     export default {
         name: "handout-case-page",
         data() {
@@ -257,13 +260,12 @@
                 searchID: '',
                 filter: {
                     visible: true,
-                    workline: '',
-                    beTestTeam: '',
-                    createUser: '',
-                    testTeam: '',
+                    workline: '0',
+                    beTestTeam: '0',
+                    createUser: '0',
+                    testWorker: '0',
                     time: ''
                 },
-                total: 90,
                 currentPage: 1,
                 pickerOptions2: {
                     shortcuts: [{
@@ -296,24 +298,33 @@
                 dialog: {
                     width: '101px',
                     visible: false,
-                    workLine: '0',
-                    beTestingCompany: '0',
-                    commentCompany: ["1","0","-1"],
-                    problemType: '0',
-                    serviceType: '0',
-                    handoutType: '0',
-                    handoutWorker: [],
-                    handoutData: [
+                    work_line: '0',
+                    be_test_team: '0',
+                    comment_result: ["1","0","-1"],
+                    problem_type: '0',
+                    service_type: '0',
+                    handout_type: '0',
+                    handout_worker: [],
+                    handout_data: [
                         {
                             'worker_id': '',
                             'caseNum': 0
                         }
                     ]
                 },
+                filterTotal: 100,
                 caseTotal: 100,
                 loading: true,
-                workers: null
+                workers: null,
+                initData: {
+                    be_test_team: [],
+                    test_worker: [],
+                    creater: [],
+                }
             }
+        },
+        mounted() {
+            this.getInitData();
         },
         methods: {
             onSearch: function() {
@@ -328,10 +339,15 @@
             handoutClick: function() {
                 this.dialog.visible = true;
             },
-            popoverCount: function() {
+            popoverCount: async function() {
                 this.loading=true;
-                // TODO await api
-                this.loading=false;
+                let res = await getFilterCount(this.dialog);
+                if(res.code === 200) {
+                    this.filterTotal = res.data;
+                    this.loading=false;
+                }else{
+                    this.$message.warning(res.message);
+                }
             },
             addArrs: function() {
                 this.dialog.handoutData.push({'worker_id':'','caseNum':0});
@@ -340,19 +356,41 @@
                 this.dialog = {
                     width: '101px',
                     visible: false,
-                    workLine: '0',
-                    beTestingCompany: '0',
-                    commentCompany: ["1","0","-1"],
-                    problemType: '0',
-                    serviceType: '0',
-                    handoutType: '0',
-                    handoutWorker: [],
-                    handoutData: [
+                    work_line: '0',
+                    be_test_team: '0',
+                    comment_result: ["1","0","-1"],
+                    problem_type: '0',
+                    service_type: '0',
+                    handout_type: '0',
+                    handout_worker: [],
+                    handout_data: [
                         {
                             'worker_id': '',
                             'caseNum': 0
                         }
                     ]
+                };
+            },
+            getInitData: async function() {
+                let beTestTeamArr = await getBeTestTeam();
+                if(beTestTeamArr.code==200) {
+                    beTestTeamArr.data.forEach((item, Idx) => {
+                        this.initData.be_test_team.push(item);
+                    });
+                }
+
+                let testWorkerArr = await getTestWorker();
+                if(testWorkerArr.code==200) {
+                    testWorkerArr.data.forEach((item, Idx) => {
+                        this.initData.test_worker.push({'worker_id':item.user_id,'nickname':item.usernick});
+                    });
+                }
+
+                let createrArr = await getCreater();
+                if(createrArr.code==200) {
+                    createrArr.data.forEach((item, Idx) => {
+                        this.initData.creater.push({'created_user':item.user_id,'nickname':item.usernick});
+                    })
                 }
             }
         },

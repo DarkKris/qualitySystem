@@ -14,7 +14,7 @@
 const CODE_SUCCESS = 0 , CODE_ERROR = 1 , CODE_TEST = -1;
 
 function apiReturn($code,$message,$data,$http_code=200) {
-    return json([
+    return json_encode([
         'code'=>$code,
         'message'=>$message,
         'data'=>$data

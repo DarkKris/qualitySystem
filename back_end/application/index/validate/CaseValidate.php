@@ -11,7 +11,8 @@ use think\Validate;
 
 class CaseValidate extends Validate {
     protected $rule = [
-        'worker_line' => 'require|number|length:1',     // 业务线
+        'case_id' => 'require|number|length:8',         // case_id
+        'work_line' => 'require|number|length:1',       // 业务线
         'be_test_team' => 'require',                    // 被质检团队
         'problem_type' => 'require|number|length:1',    // 问题类型
         'service_type' => 'require|number|length:1',    // 客服类型
@@ -20,9 +21,12 @@ class CaseValidate extends Validate {
     ];
 
     protected $message = [
-        'worker_line.require' => '缺少字段',
-        'worker_line.number' => '格式错误',
-        'worker_line.length' => '格式错误',
+        'case_id.reuire' => '缺少字段',
+        'case_id.number' => '格式错误',
+        'case_id.length' => '格式错误',
+        'work_line.require' => '缺少字段',
+        'work_line.number' => '格式错误',
+        'work_line.length' => '格式错误',
         'be_test_team.require' => '缺少字段',
         'problem_type.require' => '缺少字段',
         'problem_type.number' => '格式错误',
@@ -39,5 +43,6 @@ class CaseValidate extends Validate {
     protected $scene = [
         'filterCount' => ['worker_line','be_test_team','problem_type','service_type','comment_result'],
         'filterHandout' => ['worker_line','be_test_team','problem_type','service_type','comment_result','handout_type'],
+        'searchByID' => ['case_id'],
     ];
 }

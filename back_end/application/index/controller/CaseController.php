@@ -8,6 +8,7 @@
 namespace app\index\controller;
 
 use app\index\model\CaseModel;
+use app\index\model\UserModel;
 use app\index\validate\CaseValidate;
 use think\Controller;
 
@@ -20,6 +21,7 @@ class CaseController extends Controller {
         parent::__construct();
         $login_controller = new Login();
         $result = $login_controller->checkLogin();
+        $result = json_decode($result,true);
         if($result['code']==200) {
             if($result['data']!=false) {
                 $this->is_login = true;
@@ -38,7 +40,7 @@ class CaseController extends Controller {
         $case_validate = new CaseValidate();
         $case_model = new CaseModel();
 
-        $req = input('get.');
+        $req = input('post.');
 
         if(!$this->is_login || !$this->is_admin) {
             return apiReturn(403,'用户权限不足或未登录',[]);
@@ -51,9 +53,13 @@ class CaseController extends Controller {
 
         $condition = $this->getCondition($req);
 
-        $result = $case_model->getData($condition);
+//        halt($req);
+//        halt($condition);
+
+        $result = $case_model->getDataWithCondition($condition);
+//        halt($result);
         if ($result['code'] == CODE_SUCCESS) {
-            return apiReturn(200, 'ok', count($result));
+            return apiReturn(200, 'ok', count($result['data']));
         }else {
             return apiReturn(500,$result['message'],$result['data']);
         }
@@ -80,8 +86,68 @@ class CaseController extends Controller {
 
         $condition = $this->getCondition($req);
 
-        $result = $case_model->getData($condition);
+        $result = $case_model->getDataWithCondition($condition);
         // TODO 分配质检单 记得带上创建时间和创建人id
+    }
+
+    /**
+     * 获取被质检单位列表
+     * @return string
+     */
+    public function getBeTestTeam() {
+        $case_model = new CaseModel();
+
+        if(!$this->is_login) {
+            return apiReturn(403,'用户权限不足或未登录',[]);
+        }
+
+        $result = $case_model->getDataWithCondition([],['be_test_team'],true);
+
+        if($result['code']==CODE_SUCCESS) {
+            return apiReturn(200, 'ok', $result['data']);
+        }else{
+            return apiReturn(500,$result['message'],$result['data']);
+        }
+    }
+
+    /**
+     * 获取质检员列表
+     * @return string
+     */
+    public function getTestWorker() {
+        $user_model = new UserModel();
+
+        if(!$this->is_login) {
+            return apiReturn(403,'用户权限不足或未登录',[]);
+        }
+
+        $result = $user_model->getDataWithCondition(['admin'=>'0'],['user_id','usernick']);
+
+        if($result['code']==CODE_SUCCESS) {
+            return apiReturn(200, 'ok', $result['data']);
+        }else{
+            return apiReturn(500,$result['message'],$result['data']);
+        }
+    }
+
+    /**
+     * 获取创建人列表
+     * @return string
+     */
+    public function getCreater() {
+        $user_model = new UserModel();
+
+        if(!$this->is_login) {
+            return apiReturn(403,'用户权限不足或未登录',[]);
+        }
+
+        $result = $user_model->getDataWithCondition(['admin'=>'1'],['user_id','usernick']);
+
+        if($result['code']==CODE_SUCCESS) {
+            return apiReturn(200, 'ok', $result['data']);
+        }else{
+            return apiReturn(500,$result['message'],$result['data']);
+        }
     }
 
     /**
@@ -91,7 +157,7 @@ class CaseController extends Controller {
      */
     private function getCondition(array $req) {
         $condition = [];
-        $condition['comment_result'] = $req['comment_result'];
+        $condition['comment_result'] = array_values($req['comment_result']);
         if($req['work_line']!=0)    $condition['work_line'] = $req['work_line'];
         if($req['be_test_team']!=0) $condition['be_test_team'] = $req['be_test_team'];
         if($req['problem_type']!=0) $condition['problem_type'] = $req['problem_type'];

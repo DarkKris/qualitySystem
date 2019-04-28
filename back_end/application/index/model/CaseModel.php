@@ -14,9 +14,17 @@ class CaseModel extends Model {
 
     protected $table = 'case';
 
-    public function getData(array $condition) {
+    public function getDataWithCondition(array $condition,array $field = [], $distinct = false) {
         try {
-            $this->where($condition)->select();
+            $data = $this->where($condition);
+
+            if($field!=[])
+                $data = $data->field($field);
+            if($distinct)
+                $data = $data->distinct($distinct);
+
+            $data = $data->select();
+            return ['code'=>CODE_SUCCESS, 'message'=>'OK', 'data'=>$data ];
         } catch(Exception $e) {
             return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
         }
