@@ -25,7 +25,7 @@ class CaseController extends Controller {
         if($result['code']==200) {
             if($result['data']!=false) {
                 $this->is_login = true;
-                // 是否是程序员
+                // 是否是管理员
                 $this->is_admin = $result['data']['admin']=='1'?true:false;
             }
         }
