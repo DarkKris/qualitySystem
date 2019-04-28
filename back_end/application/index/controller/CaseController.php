@@ -151,6 +151,42 @@ class CaseController extends Controller {
     }
 
     /**
+     * 获取质检单列表
+     * TODO  unhandle out 未写完的
+     * admin/worker权限鉴定
+     * @return string
+     */
+    public function getCaseData() {
+        $case_model = new CaseModel();
+        $case_validate = new CaseValidate();
+
+        $req = input('post.');
+        $result = null;
+
+        if($this->is_login && $this->is_admin) {
+            $result = $case_validate->scene('getCaseData.admin')->check($req);
+        } else if($this->is_login) {
+                $result = $case_validate->scene('getCaseData.worker')->check($req);
+        } else {
+            return apiReturn(403,'用户权限不足或未登录',[]);
+        }
+
+        if ($result != true) {
+            return apiReturn(500, $case_validate->getError(), []);
+        }
+
+        $condition = []; // todo handle condition
+
+        $result = $case_model->getDataWithCondition($condition,[],false);
+
+        if($result['code']==CODE_SUCCESS) {
+            return apiReturn(200, 'ok', $result['data']);
+        }else{
+            return apiReturn(500,$result['message'],$result['data']);
+        }
+    }
+
+    /**
      * 从请求中获取筛选条件
      * @param array $req
      * @return array

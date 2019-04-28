@@ -66,3 +66,11 @@ export const getTestWorker = () => fetch('/CaseController/getTestWorker','get');
  */
 
 export const getCreater = () => fetch('/CaseController/getCreater','get');
+
+/**
+ * 获取质检单列表
+ * @param data
+ * @returns {Promise<*>}
+ */
+
+export const getCaseData = data => fetch('/CaseController/getCaseData','post',data);

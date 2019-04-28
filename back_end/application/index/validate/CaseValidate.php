@@ -44,5 +44,7 @@ class CaseValidate extends Validate {
         'filterCount' => ['worker_line','be_test_team','problem_type','service_type','comment_result'],
         'filterHandout' => ['worker_line','be_test_team','problem_type','service_type','comment_result','handout_type'],
         'searchByID' => ['case_id'],
+        'getCaseData.admin' => [],
+        'getCaseData.worker' => [],
     ];
 }

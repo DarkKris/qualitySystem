@@ -215,22 +215,22 @@
                         </el-select>
                         <div class="handout-children">
                             <!--平均分配-->
-                            <div v-if="dialog.handoutType==0">
+                            <div v-if="dialog.handout_type==0">
                                 <!-- TODO select-->
                                 <el-select v-model="dialog.handout_worker" multiple placeholder="请选择质检员" style="width: 350px !important;">
                                     <el-option
-                                    v-for="item in workers"
-                                    :key="item.value"
-                                    :label="item.label"
-                                    :value="item.value">
-                                    </el-option>
+                                        v-for="(item,index) in initData.test_worker"
+                                        :key="index"
+                                        :label="item.nickname"
+                                        :value="item.worker_id"
+                                    />
                                 </el-select>
                             </div>
                             <!--手动分配-->
                             <div v-else>
                                 <div v-for="(item,index) in dialog.handout_data" style="display: flex;margin:5px 0;" :key="index">
                                     <el-select v-model="item.worker_id" placeholder="请选择质检员">
-                                        <el-option label="test" value="0"/>
+                                        <el-option v-for="item in initData.test_worker" :label="item.nickname" :value="item.worker_id" />
                                     </el-select>
                                     <span style="margin-left: 15px;margin-right: 5px;">分配</span>
                                     <el-input type="number" v-model="item.caseNum" style="width: 60px;"/>
@@ -251,7 +251,7 @@
 </template>
 
 <script>
-    import { getFilterCount, getBeTestTeam, getTestWorker, getCreater } from "../api/getData";
+    import { getFilterCount, getBeTestTeam, getTestWorker, getCreater, getCaseData } from "../api/getData";
 
     export default {
         name: "handout-case-page",
@@ -315,7 +315,6 @@
                 filterTotal: 100,
                 caseTotal: 100,
                 loading: true,
-                workers: null,
                 initData: {
                     be_test_team: [],
                     test_worker: [],
@@ -350,7 +349,7 @@
                 }
             },
             addArrs: function() {
-                this.dialog.handoutData.push({'worker_id':'','caseNum':0});
+                this.dialog.handout_data.push({'worker_id':'','caseNum':0});
             },
             resetDialog: function() {
                 this.dialog = {
@@ -372,6 +371,7 @@
                 };
             },
             getInitData: async function() {
+                // 获取被质检单位列表
                 let beTestTeamArr = await getBeTestTeam();
                 if(beTestTeamArr.code==200) {
                     beTestTeamArr.data.forEach((item, Idx) => {
@@ -379,6 +379,7 @@
                     });
                 }
 
+                // 获取质检员列表
                 let testWorkerArr = await getTestWorker();
                 if(testWorkerArr.code==200) {
                     testWorkerArr.data.forEach((item, Idx) => {
@@ -386,6 +387,7 @@
                     });
                 }
 
+                // 获取创建人列表
                 let createrArr = await getCreater();
                 if(createrArr.code==200) {
                     createrArr.data.forEach((item, Idx) => {
