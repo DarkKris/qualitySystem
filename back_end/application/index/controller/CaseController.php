@@ -152,7 +152,6 @@ class CaseController extends Controller {
 
     /**
      * 获取质检单列表
-     * TODO  unhandle out 未写完的
      * admin/worker权限鉴定
      * @return string
      */
@@ -163,21 +162,20 @@ class CaseController extends Controller {
         $req = input('post.');
         $result = null;
 
-        if($this->is_login && $this->is_admin) {
-            $result = $case_validate->scene('getCaseData.admin')->check($req);
-        } else if($this->is_login) {
-                $result = $case_validate->scene('getCaseData.worker')->check($req);
-        } else {
+        if(!$this->is_login) {
             return apiReturn(403,'用户权限不足或未登录',[]);
         }
 
-        if ($result != true) {
-            return apiReturn(500, $case_validate->getError(), []);
-        }
+//        $result = $case_validate->scene('getCaseData')->check($req);
+//        if ($result != true) {
+//            return apiReturn(500, $case_validate->getError(), []);
+//        }
 
-        $condition = []; // todo handle condition
+        $condition = $req['condition'];
+//        halt($condition==['qa_id'=>'not null']);
+//        ==[['qa_id'=>'not null']]
 
-        $result = $case_model->getDataWithCondition($condition,[],false);
+        $result = $case_model->getDataJoinUser($condition);
 
         if($result['code']==CODE_SUCCESS) {
             return apiReturn(200, 'ok', $result['data']);

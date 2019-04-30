@@ -2,9 +2,9 @@
     <div class="handout-page">
         <el-row type="flex" align="middle" class="search-bar" justify="start">
             <el-col :span="1"><span class="search-bar-title">ID查询</span></el-col>
-            <el-col :span="4"><el-input type="number" placeholder="请输入完整质检单ID" style="margin-left:20px;" v-model="searchID" clearable="true"/></el-col>
+            <el-col :span="4"><el-input type="number" placeholder="请输入完整质检单ID" style="margin-left:20px;" v-model="searchID" :clearable="true"/></el-col>
             <el-col :span="19" id="buttons-group">
-                <el-button type="primary" id="search-button">搜索</el-button>
+                <el-button type="primary" id="search-button" @click="onSearch">搜索</el-button>
                 <el-button
                         type="primary"
                         id="handout-button"
@@ -35,7 +35,7 @@
                             <el-form-item label="被质检团队">
                                 <el-select v-model="filter.beTestTeam">
                                     <el-option label="全部" value="0" />
-                                    <el-option v-for="item in initData.be_test_team" :label="item.be_test_team" :value="item.be_test_team" />
+                                    <el-option v-for="item in initData.be_test_team" :label="item.be_test_team" :value="item.be_test_team" :key="item.be_test_team"/>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -44,7 +44,7 @@
                             <el-form-item label="创建人">
                                 <el-select v-model="filter.createUser">
                                     <el-option label="全部" value="0" />
-                                    <el-option v-for="item in initData.creater" :label="item.nickname" :value="item.created_user" />
+                                    <el-option v-for="item in initData.creater" :label="item.nickname" :value="item.created_user" :key="item.created_user"/>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -55,7 +55,7 @@
                             <el-form-item label="质检员">
                                 <el-select v-model="filter.testWorker">
                                     <el-option label="全部" value="0" />
-                                    <el-option v-for="item in initData.test_worker" :label="item.nickname" :value="item.worker_id" />
+                                    <el-option v-for="item in initData.test_worker" :label="item.nickname" :value="item.worker_id" :key="item.worker_id"/>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -79,8 +79,8 @@
                     </el-row>
 
                     <el-row class="filter-button-group">
-                        <el-button type="primary" @click="onSearch">查询</el-button>
-                        <el-button plain @click="resetSearch">重置</el-button>
+                        <el-button type="primary" @click="onFilter">查询</el-button>
+                        <el-button plain @click="resetFilter">重置</el-button>
                         <el-button plain @click="excelOut" v-if="$route.path == '/admin/completeCase'">导出</el-button>
                     </el-row>
                 </el-form>
@@ -95,39 +95,41 @@
                         max-height="90%"
                 >
                     <el-table-column
-                            prop="date"
                             label="序号"
                             width="100%"
+                            type="index"
                     >
                     </el-table-column>
                     <el-table-column
-                            prop="name"
                             label="质检单ID"
                     >
+                        <template scope="scope">
+                            <a href='' @click="$router.push('/caseinfo/'+scope.row.qa_id)">{{scope.row.qa_id}}</a>
+                        </template>
                     </el-table-column>
                     <el-table-column
-                            prop="address"
+                            prop="work_line"
                             label="业务线"
                     >
                     </el-table-column>
                     <el-table-column
-                            prop="address"
+                            prop="created_time"
                             label="创建时间"
                             sortable
                     >
                     </el-table-column>
                     <el-table-column
-                            prop="address"
+                            prop="creater_name"
                             label="创建人"
                     >
                     </el-table-column>
                     <el-table-column
-                            prop="address"
+                            prop="be_test_servicer"
                             label="被质检人"
                     >
                     </el-table-column>
                     <el-table-column
-                            prop="address"
+                            prop="be_test_team"
                             label="被质检团队"
                     >
                     </el-table-column>
@@ -164,7 +166,7 @@
                     <el-form-item label="被质检单位" :label-width="dialog.width">
                         <el-select v-model="dialog.be_test_team">
                             <el-option label="全部" value="0" />
-                            <el-option v-for="item in initData.be_test_team" :label="item.be_test_team" :value="item.be_test_team" />
+                            <el-option v-for="item in initData.be_test_team" :label="item.be_test_team" :value="item.be_test_team" :key="item.be_test_team"/>
                         </el-select>
                     </el-form-item>
                     <el-form-item label="评价结果" :label-width="dialog.width">
@@ -230,7 +232,7 @@
                             <div v-else>
                                 <div v-for="(item,index) in dialog.handout_data" style="display: flex;margin:5px 0;" :key="index">
                                     <el-select v-model="item.worker_id" placeholder="请选择质检员">
-                                        <el-option v-for="item in initData.test_worker" :label="item.nickname" :value="item.worker_id" />
+                                        <el-option v-for="item in initData.test_worker" :label="item.nickname" :value="item.worker_id" :key="item.worker_id"/>
                                     </el-select>
                                     <span style="margin-left: 15px;margin-right: 5px;">分配</span>
                                     <el-input type="number" v-model="item.caseNum" style="width: 60px;"/>
@@ -264,7 +266,7 @@
                     beTestTeam: '0',
                     createUser: '0',
                     testWorker: '0',
-                    time: ''
+                    time: '',
                 },
                 currentPage: 1,
                 pickerOptions2: {
@@ -294,7 +296,7 @@
                         }
                     }]
                 },
-                tableData: null,
+                tableData: [],
                 dialog: {
                     width: '101px',
                     visible: false,
@@ -326,18 +328,55 @@
             this.getInitData();
         },
         methods: {
+            // 搜索
             onSearch: function() {
-
+                // todo onSearch 用js方式进行数据筛选，避免与后端交互
             },
-            resetSearch: function() {
+            // filter查询
+            onFilter: async function() {
+                // 根据route.path更改查询类型
 
+                let condition = {};
+
+                if(path == '/admin/handoutCase') {
+                    condition = {qa_id: 'not null', status: 1};
+                }else{
+                    condition = {qa_id: 'not null', status: 2};
+                }
+
+                if(this.filter.beTestTeam != 0) condition.be_test_team = this.filter.beTestTeam;
+                if(this.filter.workline != 0) condition.work_line = this.filter.workline;
+                if(this.filter.createUser != 0) condition.created_user = this.filter.createUser;
+                if(this.filter.testWorker != 0) condition.worker_id = this.filter.testWorker;
+                if(this.filter.time !== '') condition.created_time = this.filter.time;
+
+                let listArr = await getCaseData({condition: condition});
+
+                if(listArr.code == 200) {
+                    this.drawTable(listArr.data);
+                }
             },
+            // 重置filter条件
+            resetFilter: function() {
+                this.filter = {
+                    visible: true,
+                    workline: '0',
+                    beTestTeam: '0',
+                    createUser: '0',
+                    testWorker: '0',
+                    time: '',
+                };
+                this.onFilter();
+            },
+            // 导出excel
             excelOut: function() {
 
             },
+            // 弹出dialog
             handoutClick: function() {
                 this.dialog.visible = true;
             },
+            // 查询总数功能
             popoverCount: async function() {
                 this.loading=true;
                 let res = await getFilterCount(this.dialog);
@@ -348,9 +387,11 @@
                     this.$message.warning(res.message);
                 }
             },
+            // Dialog中手动分配的添加按钮
             addArrs: function() {
                 this.dialog.handout_data.push({'worker_id':'','caseNum':0});
             },
+            // 重置Dialog中搜索条件
             resetDialog: function() {
                 this.dialog = {
                     width: '101px',
@@ -370,11 +411,28 @@
                     ]
                 };
             },
+            // 初始化界面时请求数据
             getInitData: async function() {
+                // 根据router 更改获取数据条件
+                let condition = {};
+
+                if(this.path == '/admin/handoutCase') {
+                    condition = {condition:{qa_id:'not null', status: 1}};
+                }else{
+                    condition = {condition:{qa_id:'not null', status: 2}};
+                }
+
+                // 获取data列表
+                let listArr = await getCaseData(condition);
+                if(listArr.code==200) {
+                    this.drawTable(listArr.data);
+                }
+
                 // 获取被质检单位列表
                 let beTestTeamArr = await getBeTestTeam();
                 if(beTestTeamArr.code==200) {
-                    beTestTeamArr.data.forEach((item, Idx) => {
+                    this.initData.be_test_team = [];
+                    beTestTeamArr.data.forEach( item => {
                         this.initData.be_test_team.push(item);
                     });
                 }
@@ -382,7 +440,8 @@
                 // 获取质检员列表
                 let testWorkerArr = await getTestWorker();
                 if(testWorkerArr.code==200) {
-                    testWorkerArr.data.forEach((item, Idx) => {
+                    this.initData.test_worker = [];
+                    testWorkerArr.data.forEach( item => {
                         this.initData.test_worker.push({'worker_id':item.user_id,'nickname':item.usernick});
                     });
                 }
@@ -390,12 +449,43 @@
                 // 获取创建人列表
                 let createrArr = await getCreater();
                 if(createrArr.code==200) {
-                    createrArr.data.forEach((item, Idx) => {
+                    this.initData.creater = [];
+                    createrArr.data.forEach( item => {
                         this.initData.creater.push({'created_user':item.user_id,'nickname':item.usernick});
-                    })
+                    });
                 }
+            },
+            // workLineComputed方法
+            workLineComputed: function(opt) {
+                return opt==0?'全部':opt==1?'在线':opt==2?'热线':'错误';
+            },
+            // 渲染table
+            drawTable: function(data) {
+                this.tableData = [];
+
+                data.forEach( item => {
+                    this.tableData.push({
+                        qa_id: item.qa_id,
+                        work_line: this.workLineComputed(item.work_line),
+                        created_time: new Date(item.created_time).toLocaleDateString(),
+                        creater_name: item.creater_name,
+                        be_test_servicer: item.be_test_servicer,
+                        be_test_team: item.be_test_team
+                    });
+                });
             }
         },
+        watch: {
+            path: function(val) {
+                this.getInitData();
+                this.resetFilter();
+            }
+        },
+        computed: {
+            path: function() {
+                return this.$route.path;
+            }
+        }
     }
 </script>
 

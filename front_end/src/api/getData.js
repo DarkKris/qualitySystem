@@ -73,4 +73,4 @@ export const getCreater = () => fetch('/CaseController/getCreater','get');
  * @returns {Promise<*>}
  */
 
-export const getCaseData = data => fetch('/CaseController/getCaseData','post',data);
+export const getCaseData = data => fetch('/CaseController/getCaseData', 'post', data);

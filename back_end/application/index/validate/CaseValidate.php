@@ -21,7 +21,7 @@ class CaseValidate extends Validate {
     ];
 
     protected $message = [
-        'case_id.reuire' => '缺少字段',
+        'case_id.require' => '缺少字段',
         'case_id.number' => '格式错误',
         'case_id.length' => '格式错误',
         'work_line.require' => '缺少字段',
@@ -44,7 +44,5 @@ class CaseValidate extends Validate {
         'filterCount' => ['worker_line','be_test_team','problem_type','service_type','comment_result'],
         'filterHandout' => ['worker_line','be_test_team','problem_type','service_type','comment_result','handout_type'],
         'searchByID' => ['case_id'],
-        'getCaseData.admin' => [],
-        'getCaseData.worker' => [],
     ];
 }
