@@ -50,7 +50,7 @@
                 </div>
                 <div class="case-grade-info">
                     <span class="case-info-title">质检打分</span>
-                    <div v-if="admin === true || hasComplete === true">
+                    <div v-if="admin || hasComplete">
                         <table class="case-grade-table" cellspacing="0">
                             <tr>
                                 <th>打分项</th>
@@ -119,7 +119,7 @@
 </template>
 
 <script>
-    import { checkLogin, getCaseMsg, getCaseInfo, getCaseGrade } from '../api/getData'
+    import { checkLogin, getCaseMsg, getCaseData, getCaseGrade, checkPrivilege } from '../api/getData'
     import topNav from '../components/TopNav'
 
     export default {
@@ -243,18 +243,18 @@
                     workerType: 'workerType'
                 },
                 caseGrade: {
-                    ceremony: 10,
-                    sysopt: 20,
-                    messagetrans: 20,
-                    pinpoint: 20,
-                    quickhandle: 30
+                    ceremony: '_ _',
+                    sysopt: '_ _',
+                    messagetrans: '_ _',
+                    pinpoint: '_ _',
+                    quickhandle: '_ _'
                 }
             }
         },
         mounted() {
             this.checklogin();
-            this.$refs.number1.focus()
-            // this.getContent();
+            this.$refs.number1.focus();
+            this.getContent();
         },
         methods: {
             checklogin: async function() {
@@ -266,10 +266,66 @@
                     this.$router.push('/login');
                 }
             },
+            checkVis: async function() {
+                if(this.admin) {
+                    if(!this.hasComplete) {
+                        this.$message.warning('质检单还未完成');
+                    }
+                }else{
+                    // 判断是否有本case权限
+                    let result = await checkPrivilege({worker_id: 0, qa_id: this.case_id});
+                    if(result.code == 200) {
+
+                        if(result.data !== true) {
+                            // 无权限
+                            this.$message.error("您没有该质检单的查看操作权限");
+                            this.$router.go(-1);
+                        }
+                    }else{
+                        this.$message.error(result.message);
+                        this.$router.go(-1);
+                    }
+                }
+            },
             getContent: async function() {
-                const msgResp = await getCaseMsg({case_id: this.case_id});
-                const infoResp = await getCaseInfo({case_id: this.case_id});
-                const gradeResp = await getCaseGrade({case_id: this.case_id});
+                // todo const msgResp = await getCaseMsg({case_id: this.case_id});
+                const infoResp = await getCaseData({condition:{case_id: this.case_id}});
+                if(infoResp.code == 200) {
+                    if(infoResp.data.length == 0) {
+                        this.$message.error('质检单不存在');
+                        this.$router.go(-1);
+                    }
+                    infoResp.data = infoResp.data[0];
+                    this.caseInfo.case_id = infoResp.data.case_id;
+                    this.caseInfo.creater = infoResp.data.creater_name;
+                    this.caseInfo.workline = infoResp.data.work_line==1?'在线':'热线';
+                    this.caseInfo.createTime = new Date(infoResp.data.created_time).toLocaleDateString();
+                    this.caseInfo.beTestTeam = infoResp.data.be_test_team;
+                    this.caseInfo.testWorker = infoResp.data.worker_name;
+                    this.caseInfo.beTestWorker = infoResp.data.be_test_servicer;
+                    this.caseInfo.commentFinal = infoResp.data.comment_result==1?'满意':infoResp.data.comment_result==0?'一般':'不满意';
+                    this.caseInfo.saleQues = this.quesTypeMethod(infoResp.data.problem_type);
+                    this.caseInfo.workerType = this.workerTypeMethod(infoResp.data.service_type);
+                    this.hasComplete = infoResp.data.status==2?true:false;
+                }
+                // todo const gradeResp = await getCaseGrade({case_id: this.case_id});
+                this.checkVis();
+            },
+            quesTypeMethod: function(opt) {
+                switch(opt) {
+                    case 1:return '售后问题';
+                    case 2:return '运费问题';
+                    case 3:return '商家问题';
+                    case 4:return '一般问题';
+                }
+            },
+            workerTypeMethod: function(opt) {
+                switch(opt) {
+                    case 1:return '活动客服';
+                    case 2:return '假货客服';
+                    case 3:return '高级客服';
+                    case 4:return '运费客服';
+                }
             },
             onEnter: function(num) {
                 let name = 'number'+num;
@@ -290,12 +346,22 @@
                         this.$refs.number5.focus();
                         break;
                     case 'number5':
-                        // TODO 触发"提交，下一个单子"按钮事件
+                        this.setGrade(1);
                         break;
                     default:
                         console.log(name);
                         break;
                 }
+            },
+            setGrade: function(opt) {
+                switch(opt) {
+                    case 1:
+                        // todo 下一单
+                    case 2:
+                        // todo 返回列表
+                        this.$router.push('/worker');
+                }
+                $this.$message.success('成功提交');
             }
         },
         computed: {
@@ -303,7 +369,8 @@
                 return this.$route.params.id;
             },
             totalGrade: function() {
-                return this.caseGrade.ceremony+this.caseGrade.sysopt+this.caseGrade.messagetrans+this.caseGrade.pinpoint+this.caseGrade.quickhandle;
+                let grade = this.caseGrade.ceremony+this.caseGrade.sysopt+this.caseGrade.messagetrans+this.caseGrade.pinpoint+this.caseGrade.quickhandle;
+                return isNaN(grade)?'_ _':grade;
             },
             testFinal: function() {
                 if(!this.admin && !this.hasComplete)
@@ -434,7 +501,7 @@
     .case-grade-table {
         margin-top: 20px;
         width: 350px;
-        height: 75%;
+        height: 400px;
         border-radius: 0.6em;
         border: 2px solid rgb(240,240,240);
         overflow: hidden;

@@ -338,7 +338,7 @@
 
                 let condition = {};
 
-                if(path == '/admin/handoutCase') {
+                if(this.path == '/admin/handoutCase') {
                     condition = {qa_id: 'not null', status: 1};
                 }else{
                     condition = {qa_id: 'not null', status: 2};

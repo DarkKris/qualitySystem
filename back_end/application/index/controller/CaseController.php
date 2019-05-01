@@ -11,6 +11,7 @@ use app\index\model\CaseModel;
 use app\index\model\UserModel;
 use app\index\validate\CaseValidate;
 use think\Controller;
+use think\exception\ErrorException;
 
 class CaseController extends Controller {
 
@@ -157,7 +158,6 @@ class CaseController extends Controller {
      */
     public function getCaseData() {
         $case_model = new CaseModel();
-        $case_validate = new CaseValidate();
 
         $req = input('post.');
         $result = null;
@@ -166,21 +166,55 @@ class CaseController extends Controller {
             return apiReturn(403,'用户权限不足或未登录',[]);
         }
 
-//        $result = $case_validate->scene('getCaseData')->check($req);
-//        if ($result != true) {
-//            return apiReturn(500, $case_validate->getError(), []);
-//        }
+        try {
+            if(!isset($req['condition'])) {
+                return apiReturn(500,'缺少字段', []);
+            }
 
-        $condition = $req['condition'];
-//        halt($condition==['qa_id'=>'not null']);
-//        ==[['qa_id'=>'not null']]
+            $condition = $req['condition'];
 
-        $result = $case_model->getDataJoinUser($condition);
+            $result = $case_model->getDataJoinUser($condition);
+
+            if ($result['code'] == CODE_SUCCESS) {
+                return apiReturn(200, 'ok', $result['data']);
+            } else {
+                return apiReturn(500, $result['message'], $result['data']);
+            }
+        } catch (ErrorException $errorException) {
+            return apiReturn(500,'系统错误', $errorException->getMessage());
+        }
+    }
+
+    /**
+     * 检查某质检员是否有某质检单的评价/查看权限
+     * @return string
+     */
+    public function checkPrivilege()
+    {
+        $case_model = new CaseModel();
+        $case_validate = new CaseValidate();
+
+        $req = input('post.');
+
+        if(!$this->is_login) {
+            return apiReturn(403,'用户未登录',[]);
+        }
+
+        $result = $case_validate->scene('checkPrivilege')->check($req);
+        if($result != true) {
+            return apiReturn(500, $case_validate->getError(), []);
+        }
+
+        if($req['worker_id']==0) {
+            $req['worker_id'] = session('user_id');
+        }
+
+        $result = $case_model->checkPrivi($req['worker_id'],$req['qa_id']);
 
         if($result['code']==CODE_SUCCESS) {
-            return apiReturn(200, 'ok', $result['data']);
+            return apiReturn(200,'ok',$result['data']);
         }else{
-            return apiReturn(500,$result['message'],$result['data']);
+            return apiReturn(200,$result['message'], $result['data']);
         }
     }
 

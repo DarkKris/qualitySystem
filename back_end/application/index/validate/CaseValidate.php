@@ -18,6 +18,8 @@ class CaseValidate extends Validate {
         'service_type' => 'require|number|length:1',    // 客服类型
         'comment_result' => 'require',                  // 评价结果
         'handout_type' => 'require|number|length:1',    // 分配方式
+        'worker_id' => 'require',                       // 质检员id
+        'qa_id' => 'require',                           // 质检单id
     ];
 
     protected $message = [
@@ -38,11 +40,14 @@ class CaseValidate extends Validate {
         'handout_type.require' => '缺少字段',
         'handout_type.number' => '格式错误',
         'handout_type.length' => '格式错误',
+        'worker_id.require' => '缺少字段',
+        'qa_id.require' => '缺少字段',
     ];
 
     protected $scene = [
         'filterCount' => ['worker_line','be_test_team','problem_type','service_type','comment_result'],
         'filterHandout' => ['worker_line','be_test_team','problem_type','service_type','comment_result','handout_type'],
         'searchByID' => ['case_id'],
+        'checkPrivilege' => ['worker_id','qa_id'],
     ];
 }

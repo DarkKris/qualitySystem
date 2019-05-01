@@ -74,3 +74,11 @@ export const getCreater = () => fetch('/CaseController/getCreater','get');
  */
 
 export const getCaseData = data => fetch('/CaseController/getCaseData', 'post', data);
+
+/**
+ * 检查质检员权限
+ * @param data
+ * @returns {Promise<*>}
+ */
+
+export const checkPrivilege = data => fetch('/CaseController/checkPrivilege', 'post', data);

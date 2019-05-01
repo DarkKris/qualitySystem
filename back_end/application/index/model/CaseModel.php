@@ -33,6 +33,7 @@ class CaseModel extends Model {
     public function getDataJoinUser(array $condition) {
         try {
             $data = $this;
+            // 处理qa_id查询
             if(isset($condition['qa_id']))
             {
                 if($condition['qa_id']=='not null')
@@ -47,6 +48,12 @@ class CaseModel extends Model {
                     // pass
                 }
             }
+            // 处理created_time查询
+            if(isset($condition['created_time']))
+            {
+                $data->where('created_time','between',$condition['created_time']);
+            }
+            // join用户表
             $data = $data->where($condition)
                 ->alias('c')
                 ->leftJoin('user u1','u1.user_id = c.created_user')
@@ -72,6 +79,23 @@ class CaseModel extends Model {
 
             return ['code'=>CODE_SUCCESS, 'message'=>'OK', 'data'=>$data->toArray()];
         }catch(Exception $e) {
+            return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
+        }
+    }
+
+    public function checkPrivi($worker_id, $qa_id) {
+        try {
+            $result = $this->where([
+                'worker_id' => $worker_id,
+                'qa_id' => $qa_id
+            ])->find();
+
+            if($result) {
+                return ['code'=>CODE_SUCCESS, 'message'=>'ok', 'data'=>true];
+            }else{
+                return ['code'=>CODE_SUCCESS, 'message'=>'ok', 'data'=>false];
+            }
+        } catch(Exception $e) {
             return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
         }
     }
