@@ -32,28 +32,30 @@
                                     max-height="90%"
                             >
                                 <el-table-column
-                                        prop="date"
+                                        type="index"
                                         label="序号"
                                         width="100%"
                                 >
                                 </el-table-column>
                                 <el-table-column
-                                        prop="name"
                                         label="质检单ID"
                                 >
+                                    <template scope="scope">
+                                        <a href='' @click="$router.push('/caseinfo/'+scope.row.qa_id)">{{scope.row.qa_id}}</a>
+                                    </template>
                                 </el-table-column>
                                 <el-table-column
-                                        prop="address"
+                                        prop="work_line"
                                         label="业务线"
                                 >
                                 </el-table-column>
                                 <el-table-column
-                                        prop="problemType"
+                                        prop="problem_type"
                                         label="问题类型"
                                 >
                                 </el-table-column>
                                 <el-table-column
-                                        prop="address"
+                                        prop="creater_name"
                                         label="创建人"
                                 >
                                 </el-table-column>
@@ -77,7 +79,7 @@
 
 <script>
     import topNav from '../components/TopNav';
-    import { checkLogin } from '../api/getData';
+    import { checkLogin, getCaseData } from '../api/getData';
 
     export default {
         name: "worker-page",
@@ -105,9 +107,33 @@
                     this.$router.push('/login');
                 }
             },
+            getCaseList: async function() {
+                const listArr = await getCaseData({condition:{qa_id: 'not null',status: 1, worker_id: 0}});
+                if(listArr.code==200) {
+                    this.tableData = [];
+                    listArr.data.forEach( item => {
+                        this.tableData.push({
+                            qa_id: item.qa_id,
+                            work_line: item.work_line==1?'在线':'热线',
+                            problem_type: this.quesTypeMethod(item.problem_type),
+                            creater_name: item.creater_name
+                        });
+                    });
+                    this.total = listArr.data.length;
+                }
+            },
+            quesTypeMethod: function(opt) {
+                switch(opt) {
+                    case 1:return '售后问题';
+                    case 2:return '运费问题';
+                    case 3:return '商家问题';
+                    case 4:return '一般问题';
+                }
+            },
         },
         mounted() {
             this.checklogin();
+            this.getCaseList();
         }
     }
 </script>

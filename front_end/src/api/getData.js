@@ -25,20 +25,6 @@ export const logout = () => fetch('/Login/logout', 'get');
 export const getCaseMsg = data => fetch('/CaseController/getCaseMsg', 'post', data);
 
 /**
- * 获取case信息
- */
-
-export const getCaseInfo = data => fetch('/CaseController/getCaseInfo', 'post', data);
-
-/**
- * 获取case成绩信息
- * @param data
- * @returns {Promise<*>}
- */
-
-export const getCaseGrade = data => fetch('/CaseController/getCaseGrade', 'post', data);
-
-/**
  * 根据筛选条件获取case数
  * @param data
  * @returns {Promise<*>}
@@ -82,3 +68,11 @@ export const getCaseData = data => fetch('/CaseController/getCaseData', 'post', 
  */
 
 export const checkPrivilege = data => fetch('/CaseController/checkPrivilege', 'post', data);
+
+/**
+ * 给质检单打分
+ * @param data
+ * @returns {Promise<*>}
+ */
+
+export const setGrade = data => fetch('/CaseController/markCase', 'post', data);

@@ -173,6 +173,12 @@ class CaseController extends Controller {
 
             $condition = $req['condition'];
 
+            if(isset($condition['worker_id'])) {
+                if($condition['worker_id']==0) {
+                    $condition['worker_id'] = session('user_id');
+                }
+            }
+
             $result = $case_model->getDataJoinUser($condition);
 
             if ($result['code'] == CODE_SUCCESS) {
@@ -214,7 +220,88 @@ class CaseController extends Controller {
         if($result['code']==CODE_SUCCESS) {
             return apiReturn(200,'ok',$result['data']);
         }else{
-            return apiReturn(200,$result['message'], $result['data']);
+            return apiReturn(500,$result['message'], $result['data']);
+        }
+    }
+
+    /**
+     * 给质检单打分
+     * @return string
+     */
+    public function markCase()
+    {
+        $case_model = new CaseModel();
+        $case_validate = new CaseValidate();
+
+        $req = input('post.');
+
+        if(!$this->is_login) {
+            return apiReturn(403,'用户未登录',[]);
+        }
+
+        $result = $case_validate->scene('markCase')->check($req);
+        if($result != true) {
+            return apiReturn(500, $case_validate->getError(), []);
+        }
+
+        $result = $case_model->checkPrivi(session('user_id'),$req['qa_id']);
+        if($result['code']==CODE_SUCCESS) {
+            if(!$result['data']) {
+                return apiReturn(403,'用户没有权限',[]);
+            }
+        }else{
+            return apiReturn(500,$result['message'], $result['data']);
+        }
+
+        $grade = [
+            'ceremony'      => $req['ceremony'],
+            'sysopt'        => $req['sysopt'],
+            'messagetrans'  => $req['messagetrans'],
+            'pinpoint'      => $req['pinpoint'],
+            'quickhandle'   => $req['quickhandle']
+        ];
+
+        $result = $case_model->setGrade($req['qa_id'],$grade);
+
+        if($result['code']==CODE_SUCCESS) {
+            return apiReturn(200,'ok',[]);
+        }else{
+            return apiReturn(500,$result['message'], $result['data']);
+        }
+    }
+
+    public function getCaseMsg() {
+        $case_model = new CaseModel();
+        $case_validate = new CaseValidate();
+
+        $req = input('post.');
+
+        if(!$this->is_login) {
+            return apiReturn(403,'用户未登录',[]);
+        }
+
+        $result = $case_validate->scene('getCaseMsg')->check($req);
+        if($result != true) {
+            return apiReturn(500, $case_validate->getError(), []);
+        }
+
+        if(!$this->is_admin) {
+            // 检验权限
+            $result = $case_model->checkPrivi(session('user_id'),$req['qa_id']);
+            if($result['code']==CODE_SUCCESS) {
+                if(!$result['data']) {
+                    return apiReturn(403,'用户没有权限',[]);
+                }
+            }else{
+                return apiReturn(500,$result['message'], $result['data']);
+            }
+        }
+
+        $result = $case_model->getDataWithCondition(['qa_id'=>$req['qa_id']],['message']);
+        if($result['code']==CODE_SUCCESS) {
+            return apiReturn(200,'ok',$result['data'][0]['message']);
+        }else{
+            return apiReturn(500,$result['message'], $result['data']);
         }
     }
 

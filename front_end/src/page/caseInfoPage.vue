@@ -34,11 +34,11 @@
                         </el-row>
                         <el-row>
                             <el-col :span="12"><div class="data-title">被质检人</div><div class="data-content">{{caseInfo.beTestWorker}}</div></el-col>
-                            <el-col :span="12"><div class="data-title">质检结果</div><div class="data-content">{{caseInfo.testFinal}}</div></el-col>
+                            <el-col :span="12"><div class="data-title">质检结果</div><div class="data-content">{{testFinalComputed}}</div></el-col>
                         </el-row>
                         <el-row>
                             <el-col :span="12"><div class="data-title">评价结果</div><div class="data-content">{{caseInfo.commentFinal}}</div></el-col>
-                            <el-col :span="12"><div class="data-title">质检得分</div><div class="data-content">{{caseInfo.testGrade}}</div></el-col>
+                            <el-col :span="12"><div class="data-title">质检得分</div><div class="data-content">{{totalGradeComputed}}</div></el-col>
                         </el-row>
                         <el-row>
                             <el-col :span="12"><div class="data-title">售后问题</div><div class="data-content">{{caseInfo.saleQues}}</div></el-col>
@@ -84,7 +84,7 @@
 
                             <tr>
                                 <td class="title">质检得分</td>
-                                <td>{{ totalGrade }}</td>
+                                <td>{{ totalGradeComputed }}</td>
                             </tr>
                         </table>
                     </div>
@@ -106,9 +106,9 @@
                                 <el-input-number v-model="caseGrade.quickhandle"    :min="0" :max="30" label="快速处理问题"  name="number5" ref="number5" style="width: 200px;" @keyup.enter.native="onEnter(5)"/>
                             </el-form-item>
                             <el-form-item style="display: flex;">
-                                <el-button type="primary">提交，并下一条</el-button>
-                                <el-button plain>提交，回列表</el-button>
-                                <el-button plain>重置</el-button>
+                                <el-button type="primary" @click="setGrade(1)">提交，并下一条</el-button>
+                                <el-button plain @click="setGrade(2)">提交，回列表</el-button>
+                                <el-button plain @click="resetGrade">重置</el-button>
                             </el-form-item>
                         </el-form>
                     </div>
@@ -119,7 +119,7 @@
 </template>
 
 <script>
-    import { checkLogin, getCaseMsg, getCaseData, getCaseGrade, checkPrivilege } from '../api/getData'
+    import { checkLogin, getCaseMsg, getCaseData, checkPrivilege, setGrade } from '../api/getData'
     import topNav from '../components/TopNav'
 
     export default {
@@ -229,16 +229,13 @@
                     },
                 ],
                 caseInfo: {
-                    case_id: '12345678',
                     creater: 'testName',
                     workline: 'workline',
                     createTime: '2018.11.11',
                     beTestTeam: 'beTestTeam',
                     testWorker: 'testWorker',
                     beTestWorker: 'beTestWorker',
-                    testFinal: '— —',
                     commentFinal: 'commentFinal',
-                    testGrade: '— —',
                     saleQues: 'saleQuestion',
                     workerType: 'workerType'
                 },
@@ -275,11 +272,12 @@
                     // 判断是否有本case权限
                     let result = await checkPrivilege({worker_id: 0, qa_id: this.case_id});
                     if(result.code == 200) {
-
                         if(result.data !== true) {
                             // 无权限
                             this.$message.error("您没有该质检单的查看操作权限");
                             this.$router.go(-1);
+                        }else{
+                            if(!this.hasComplete) this.resetGrade();
                         }
                     }else{
                         this.$message.error(result.message);
@@ -288,27 +286,34 @@
                 }
             },
             getContent: async function() {
-                // todo const msgResp = await getCaseMsg({case_id: this.case_id});
-                const infoResp = await getCaseData({condition:{case_id: this.case_id}});
+                let msgResp = await getCaseMsg({qa_id: this.case_id});
+                if(msgResp.code==200) {
+                    // todo 保存 json
+                }else{
+                    this.$message.error(msgResp.message);
+                }
+
+                let infoResp = await getCaseData({condition:{case_id: this.case_id}});
                 if(infoResp.code == 200) {
-                    if(infoResp.data.length == 0) {
+                    if (infoResp.data.length == 0) {
                         this.$message.error('质检单不存在');
                         this.$router.go(-1);
                     }
                     infoResp.data = infoResp.data[0];
                     this.caseInfo.case_id = infoResp.data.case_id;
                     this.caseInfo.creater = infoResp.data.creater_name;
-                    this.caseInfo.workline = infoResp.data.work_line==1?'在线':'热线';
+                    this.caseInfo.workline = infoResp.data.work_line == 1 ? '在线' : '热线';
                     this.caseInfo.createTime = new Date(infoResp.data.created_time).toLocaleDateString();
                     this.caseInfo.beTestTeam = infoResp.data.be_test_team;
                     this.caseInfo.testWorker = infoResp.data.worker_name;
                     this.caseInfo.beTestWorker = infoResp.data.be_test_servicer;
-                    this.caseInfo.commentFinal = infoResp.data.comment_result==1?'满意':infoResp.data.comment_result==0?'一般':'不满意';
+                    this.caseInfo.commentFinal = infoResp.data.comment_result == 1 ? '满意' : infoResp.data.comment_result == 0 ? '一般' : '不满意';
                     this.caseInfo.saleQues = this.quesTypeMethod(infoResp.data.problem_type);
                     this.caseInfo.workerType = this.workerTypeMethod(infoResp.data.service_type);
-                    this.hasComplete = infoResp.data.status==2?true:false;
+                    this.hasComplete = infoResp.data.status == 2 ? true : false;
+
+                    this.caseGrade = JSON.parse(infoResp.data.grade);
                 }
-                // todo const gradeResp = await getCaseGrade({case_id: this.case_id});
                 this.checkVis();
             },
             quesTypeMethod: function(opt) {
@@ -349,39 +354,55 @@
                         this.setGrade(1);
                         break;
                     default:
-                        console.log(name);
                         break;
                 }
             },
-            setGrade: function(opt) {
-                switch(opt) {
-                    case 1:
-                        // todo 下一单
-                    case 2:
-                        // todo 返回列表
-                        this.$router.push('/worker');
+            setGrade: async function(opt) {
+                let data = this.caseGrade;
+                data.qa_id = this.case_id;
+                let rep = await setGrade(data);
+                if(rep.code==200) {
+                    switch (opt) {
+                        case 1:
+                            // todo 下一单
+                            break;
+                        case 2:
+                            // todo 返回列表
+                            this.$router.push('/worker');
+                            break;
+                    }
+                    this.$message.success('成功提交');
+                }else{
+                    this.$message.error('发生错误，提交失败');
                 }
-                $this.$message.success('成功提交');
+            },
+            resetGrade: function() {
+                this.caseGrade = {
+                    ceremony: 0,
+                    sysopt: 0,
+                    messagetrans: 0,
+                    pinpoint: 0,
+                    quickhandle: 0
+                };
             }
         },
         computed: {
             case_id: function() {
                 return this.$route.params.id;
             },
-            totalGrade: function() {
+            totalGradeComputed: function() {
                 let grade = this.caseGrade.ceremony+this.caseGrade.sysopt+this.caseGrade.messagetrans+this.caseGrade.pinpoint+this.caseGrade.quickhandle;
                 return isNaN(grade)?'_ _':grade;
             },
-            testFinal: function() {
+            testFinalComputed: function() {
                 if(!this.admin && !this.hasComplete)
-                    return '————';
-                let total = this.totalGrade();
+                    return '_ _';
+                let total = this.totalGradeComputed;
                 if(total<60) {
                     return '不合格';
                 }else{
                     return '合格';
                 }
-                return '————';
             }
         }
     }

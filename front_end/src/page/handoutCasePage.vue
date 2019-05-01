@@ -426,6 +426,7 @@
                 let listArr = await getCaseData(condition);
                 if(listArr.code==200) {
                     this.drawTable(listArr.data);
+                    this.caseTotal = listArr.data.length;
                 }
 
                 // 获取被质检单位列表

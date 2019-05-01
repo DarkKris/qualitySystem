@@ -99,4 +99,27 @@ class CaseModel extends Model {
             return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
         }
     }
+
+    public function setGrade($qa_id, array $grade) {
+        try {
+            $data = $this->where('qa_id',$qa_id)->field('grade')->find();
+            $data = $data['grade'];
+
+            if($data!='' && $data!=NULL && $data!=[]) {
+                return ['code'=>CODE_ERROR, 'message'=>'禁止重复打分', 'data'=>[]];
+            }
+
+            $result = $this->where('qa_id',$qa_id)
+                ->setField('grade',json_encode($grade));
+
+            if($result) {
+                $this->where('qa_id',$qa_id)->setField('status',2);
+                return ['code'=>CODE_SUCCESS, 'message'=>'ok', 'data'=>true];
+            }else{
+                return ['code'=>CODE_ERROR, 'message'=>'打分失败', 'data'=>[]];
+            }
+        } catch(Exception $e) {
+            return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
+        }
+    }
 }
