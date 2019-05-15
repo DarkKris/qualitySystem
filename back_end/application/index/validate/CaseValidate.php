@@ -24,7 +24,8 @@ class CaseValidate extends Validate {
         'sysopt' => 'require|integer|between:0,20',         // 打分项：系统操作规范
         'messagetrans' => 'require|integer|between:0,20',   // 打分项：信息传递规范
         'pinpoint' => 'require|integer|between:0,20',       // 打分项：精准定位问题
-        'quickhandle' => 'require|integer|between:0,30'     // 打分项：快速处理问题
+        'quickhandle' => 'require|integer|between:0,30',    // 打分项：快速处理问题
+        'handout_total' => 'require|integer',               // 分配质检单总数
     ];
 
     protected $message = [
@@ -62,11 +63,13 @@ class CaseValidate extends Validate {
         'quickhandle.require' => '缺少字段',
         'quickhandle.integer' => '格式错误',
         'quickhandle.between' => '数字超界',
+        'handout_total.require' => '缺少字段',
+        'handout_total.integer' => '格式错误',
     ];
 
     protected $scene = [
         'filterCount' => ['worker_line','be_test_team','problem_type','service_type','comment_result'],
-        'filterHandout' => ['worker_line','be_test_team','problem_type','service_type','comment_result','handout_type'],
+        'filterHandout' => ['worker_line','be_test_team','problem_type','service_type','comment_result','handout_type','handout_total'],
         'searchByID' => ['case_id'],
         'checkPrivilege' => ['worker_id','qa_id'],
         'markCase' => ['ceremony', 'sysopt', 'messagetrans', 'pinpoint', 'quickhandle', 'qa_id'],

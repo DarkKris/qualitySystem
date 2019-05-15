@@ -12,7 +12,7 @@
                             :class="key.type === 'user'?'user-message':'service-message'"
                     >
                         <span class="message-title">{{key.username}}&nbsp;&nbsp;&nbsp;{{key.time}}</span>
-                        <span class="message-content">{{key.content}}</span>
+                        <span class="message-content">{{key.message}}</span>
                     </div>
                 </div>
             </el-col>
@@ -130,114 +130,17 @@
                 admin: false,
                 hasComplete: false,
                 username: '未登录',
-                caseMessages: [
-                    {
-                        type: 'service',
-                        username: '在线客服001',
-                        time: '2018.11.11 12:01:20',
-                        content: '您好，工号001很高兴为您服务，请问什么可以帮助您'
-                    },
-                    {
-                        type: 'user',
-                        username: '用户',
-                        time: '2018.11.11 12:00:00',
-                        content: '您好，我有一个退货售后问题'
-                    },
-                    {
-                        type: 'service',
-                        username: '在线客服001',
-                        time: '2018.11.11 12:01:20',
-                        content: '您好，工号001很高兴为您服务，请问什么可以帮助您您好，工号001很高兴为您服务，请问什么可以帮助您您好，工号001很高兴为您服务，请问什么可以帮助您'
-                    },
-                    {
-                        type: 'user',
-                        username: '用户',
-                        time: '2018.11.11 12:00:00',
-                        content: '您好，我有一个退货售后问题'
-                    },
-                    {
-                        type: 'service',
-                        username: '在线客服001',
-                        time: '2018.11.11 12:01:20',
-                        content: '您好，工号001很高兴为您服务，请问什么可以帮助您'
-                    },
-                    {
-                        type: 'user',
-                        username: '用户',
-                        time: '2018.11.11 12:00:00',
-                        content: '您好，我有一个退货售后问题'
-                    },
-                    {
-                        type: 'service',
-                        username: '在线客服001',
-                        time: '2018.11.11 12:01:20',
-                        content: '您好，工号001很高兴为您服务，请问什么可以帮助您'
-                    },
-                    {
-                        type: 'user',
-                        username: '用户',
-                        time: '2018.11.11 12:00:00',
-                        content: '您好，我有一个退货售后问题'
-                    },
-                    {
-                        type: 'service',
-                        username: '在线客服001',
-                        time: '2018.11.11 12:01:20',
-                        content: '您好，工号001很高兴为您服务，请问什么可以帮助您'
-                    },
-                    {
-                        type: 'user',
-                        username: '用户',
-                        time: '2018.11.11 12:00:00',
-                        content: '您好，我有一个退货售后问题'
-                    },
-                    {
-                        type: 'service',
-                        username: '在线客服001',
-                        time: '2018.11.11 12:01:20',
-                        content: '您好，工号001很高兴为您服务，请问什么可以帮助您'
-                    },
-                    {
-                        type: 'user',
-                        username: '用户',
-                        time: '2018.11.11 12:00:00',
-                        content: '您好，我有一个退货售后问题'
-                    },
-                    {
-                        type: 'service',
-                        username: '在线客服001',
-                        time: '2018.11.11 12:01:20',
-                        content: '您好，工号001很高兴为您服务，请问什么可以帮助您'
-                    },
-                    {
-                        type: 'user',
-                        username: '用户',
-                        time: '2018.11.11 12:00:00',
-                        content: '您好，我有一个退货售后问题'
-                    },
-                    {
-                        type: 'service',
-                        username: '在线客服001',
-                        time: '2018.11.11 12:01:20',
-                        content: '您好，工号001很高兴为您服务，请问什么可以帮助您'
-                    },
-                    {
-                        type: 'user',
-                        username: '用户',
-                        time: '2018.11.11 12:00:00',
-                        content: '您好，我有一个退货售后问题'
-                    },
-                ],
+                caseMessages: [],
                 caseInfo: {
-                    creater: 'testName',
-                    workline: 'workline',
-                    createTime: '2018.11.11',
-                    beTestTeam: 'beTestTeam',
-                    testWorker: 'testWorker',
-                    beTestWorker: 'beTestWorker',
-                    commentFinal: 'commentFinal',
-                    saleQues: 'saleQuestion',
-                    workerType: 'workerType'
+                    creater: '',
+                    workline: '',
+                    createTime: '',
+                    beTestTeam: '',
+                    testWorker: '',
+                    beTestWorker: '',
+                    commentFinal: '',
+                    saleQues: '',
+                    workerType: ''
                 },
                 caseGrade: {
                     ceremony: '_ _',
@@ -245,13 +148,14 @@
                     messagetrans: '_ _',
                     pinpoint: '_ _',
                     quickhandle: '_ _'
-                }
+                },
+                taskList: [],
+                listIdx: 0,
             }
         },
-        mounted() {
-            this.checklogin();
-            this.$refs.number1.focus();
-            this.getContent();
+        async beforeMount() {
+            await this.checklogin();
+            await this.getContent();
         },
         methods: {
             checklogin: async function() {
@@ -277,7 +181,10 @@
                             this.$message.error("您没有该质检单的查看操作权限");
                             this.$router.go(-1);
                         }else{
-                            if(!this.hasComplete) this.resetGrade();
+                            if(!this.hasComplete) {
+                                await this.resetGrade();
+                                await this.$refs.number1.focus();
+                            }
                         }
                     }else{
                         this.$message.error(result.message);
@@ -288,7 +195,12 @@
             getContent: async function() {
                 let msgResp = await getCaseMsg({qa_id: this.case_id});
                 if(msgResp.code==200) {
-                    // todo 保存 json
+                    // 解析json
+                    this.caseMessages = [];
+                    let data = JSON.parse(msgResp.data).content;
+                    data.forEach( (val,index) => {
+                        this.caseMessages.push(val);
+                    });
                 }else{
                     this.$message.error(msgResp.message);
                 }
@@ -312,9 +224,25 @@
                     this.caseInfo.workerType = this.workerTypeMethod(infoResp.data.service_type);
                     this.hasComplete = infoResp.data.status == 2 ? true : false;
 
-                    this.caseGrade = JSON.parse(infoResp.data.grade);
+                    if(!(typeof(infoResp.data.grade)=='undefined') && infoResp.data.grade) {
+                        this.caseGrade = JSON.parse(infoResp.data.grade);
+                    }
                 }
-                this.checkVis();
+
+                // get taskList and listIdx
+                let flag = false;
+                this.taskList = await getCaseData({condition:{qa_id: 'not null',status: 1, worker_id: 0}});
+                if(this.taskList.code == 200) this.taskList = this.taskList.data;
+                await this.taskList.forEach( (data,index) => {
+                    if(flag===false) {
+                        if (data.qa_id == this.case_id) {
+                            this.listIdx = index;
+                            flag = true;
+                        }
+                    }
+                });
+
+                await this.checkVis();
             },
             quesTypeMethod: function(opt) {
                 switch(opt) {
@@ -364,16 +292,24 @@
                 if(rep.code==200) {
                     switch (opt) {
                         case 1:
-                            // todo 下一单
+                            // 下一单
+                            if(this.listIdx+1 === this.taskList.length) {
+                                // 到头了
+                                this.$message.success('成功提交，已经完成所有工作');
+                                setInterval(this.$router.push('/worker'),1000);
+                            }else{
+                                // 跳转到下一单
+                                this.$router.push('/caseinfo/'+this.taskList[this.listIdx+1].case_id);
+                            }
                             break;
                         case 2:
-                            // todo 返回列表
+                            // 返回列表
                             this.$router.push('/worker');
                             break;
                     }
                     this.$message.success('成功提交');
                 }else{
-                    this.$message.error('发生错误，提交失败');
+                    this.$message.error('发生错误，提交失败:');
                 }
             },
             resetGrade: function() {
@@ -386,11 +322,18 @@
                 };
             }
         },
+        watch: {
+            case_id: function() {
+                this.checklogin();
+                this.getContent();
+            }
+        },
         computed: {
             case_id: function() {
                 return this.$route.params.id;
             },
             totalGradeComputed: function() {
+                if(!this.hasComplete)return'_ _';
                 let grade = this.caseGrade.ceremony+this.caseGrade.sysopt+this.caseGrade.messagetrans+this.caseGrade.pinpoint+this.caseGrade.quickhandle;
                 return isNaN(grade)?'_ _':grade;
             },

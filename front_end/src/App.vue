@@ -36,4 +36,6 @@ export default {
     {
         display: none;
     }
+
+    /* min-width: 1490px */
 </style>

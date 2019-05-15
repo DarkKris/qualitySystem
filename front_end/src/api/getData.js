@@ -76,3 +76,6 @@ export const checkPrivilege = data => fetch('/CaseController/checkPrivilege', 'p
  */
 
 export const setGrade = data => fetch('/CaseController/markCase', 'post', data);
+
+
+export const filterHandout = data => fetch('/CaseController/filterHandout', 'post', data);

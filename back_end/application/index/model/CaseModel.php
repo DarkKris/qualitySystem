@@ -51,7 +51,10 @@ class CaseModel extends Model {
             // 处理created_time查询
             if(isset($condition['created_time']))
             {
-                $data->where('created_time','between',$condition['created_time']);
+                $condition['created_time'][0] = substr($condition['created_time'][0],0,10);
+                $condition['created_time'][1] = substr($condition['created_time'][1],0,10);
+                $data->whereTime('created_time','between',[$condition['created_time'][0], $condition['created_time'][1]]);
+                unset($condition['created_time']);
             }
             // join用户表
             $data = $data->where($condition)
@@ -119,6 +122,26 @@ class CaseModel extends Model {
                 return ['code'=>CODE_ERROR, 'message'=>'打分失败', 'data'=>[]];
             }
         } catch(Exception $e) {
+            return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
+        }
+    }
+
+    public function setHandout($case_id, $creater, $worker, $time) {
+        try {
+            $result = $this->where('case_id',$case_id)
+                    ->update([
+                        'qa_id'=>$case_id,
+                        'worker_id'=>$worker,
+                        'status'=>1,
+                        'created_time'=>date('Y-m-d H:i:s',$time),
+                        'created_user'=>$creater
+                    ]);
+            if($result) {
+                return ['code'=>CODE_SUCCESS, 'message'=>'ok', 'data'=>true];
+            }else{
+                return ['code'=>CODE_ERROR, 'message'=>'分配失败', 'data'=>false];
+            }
+        } catch (Exception $e) {
             return ['code'=>CODE_ERROR, 'message'=>'数据库错误', 'data'=>$e->getMessage()];
         }
     }

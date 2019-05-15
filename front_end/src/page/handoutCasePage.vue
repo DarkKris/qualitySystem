@@ -88,7 +88,7 @@
 
             <div class="list-content">
                 <el-table
-                        :data="tableData"
+                        :data="tableData.filter(data => !searchID || data.qa_id == searchID)"
                         style="width: 100%;"
                         height="90%"
                         header-cell-class-name="header-cell"
@@ -155,7 +155,7 @@
                     style="overflow-y: scroll"
                     append-to-body="true"
             >
-                <el-form :model="dialog">
+                <el-form :model="dialog" status-icon :rules="rules" ref="dialogForm">
                     <el-form-item label="业务线" :label-width="dialog.width">
                         <el-select v-model="dialog.work_line">
                             <el-option label="全部" value="0" />
@@ -194,8 +194,8 @@
                             <el-option label="运费客服" value="4" />
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="数量" :label-width="dialog.width" style="margin-top: 50px;">
-                        <el-input type="number" v-model="dialog.name" autocomplete="off" placeholder="请输入数量，不得超过case总数" style="width: 300px;"/>
+                    <el-form-item label="数量" :label-width="dialog.width" style="margin-top: 50px;" prop="handout_total">
+                        <el-input type="number" v-model="dialog.handout_total" autocomplete="off" placeholder="请输入数量，不得超过case总数" style="width: 300px;"/>
                         <el-popover
                                 placement="right"
                                 width="100"
@@ -210,7 +210,7 @@
                             <a slot="reference" style="margin-left: 20px;font-size:14px;color:#4a90e2;" @click="popoverCount">查看case总数</a>
                         </el-popover>
                     </el-form-item>
-                    <el-form-item label="分配方式" :label-width="dialog.width">
+                    <el-form-item label="分配方式" :label-width="dialog.width" prop="handout_type">
                         <el-select v-model="dialog.handout_type" style="width: 200px !important;">
                             <el-option label="平均分配" value="0" />
                             <el-option label="手动分配" value="1" />
@@ -218,7 +218,6 @@
                         <div class="handout-children">
                             <!--平均分配-->
                             <div v-if="dialog.handout_type==0">
-                                <!-- TODO select-->
                                 <el-select v-model="dialog.handout_worker" multiple placeholder="请选择质检员" style="width: 350px !important;">
                                     <el-option
                                         v-for="(item,index) in initData.test_worker"
@@ -237,6 +236,7 @@
                                     <span style="margin-left: 15px;margin-right: 5px;">分配</span>
                                     <el-input type="number" v-model="item.caseNum" style="width: 60px;"/>
                                     <span style="margin-left: 5px;">单</span>
+                                    <el-button @click="deleArrs(index)" plain style="margin-left: 5px;">删除</el-button>
                                 </div>
                                 <el-button @click="addArrs" plain style="margin-top: 15px;">增加</el-button>
                             </div>
@@ -244,8 +244,8 @@
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
-                    <el-button type="primary" @click="dialog.visible = false">确 定</el-button>
-                    <el-button plain @click="dialog.visible = false">取 消</el-button>
+                    <el-button type="primary" @click="handoutCaseFunction">确 定</el-button>
+                    <el-button plain @click="resetDialog">取 消</el-button>
                 </div>
             </el-dialog>
         </keep-alive>
@@ -253,12 +253,58 @@
 </template>
 
 <script>
-    import { getFilterCount, getBeTestTeam, getTestWorker, getCreater, getCaseData } from "../api/getData";
+    import { getFilterCount, getBeTestTeam, getTestWorker, getCreater, getCaseData, filterHandout } from "../api/getData";
 
     export default {
         name: "handout-case-page",
         data() {
+            // 表单检验项begin
+            var validateHandoutType = (rule, value, callback) => {
+                if (this.dialog.handout_type == 0) {
+                    // 平均分配
+                    if(this.dialog.handout_worker.length > this.filterTotal) {
+                        callback(new Error('(平均每人分配0单)请合理分配质检单'));
+                    }
+                } else {
+                    let count = 0;
+                    this.dialog.handout_data.forEach( (data, index) => {
+                        if(data.worker_id == '') callback(new Error('请选择质检员'));
+                        if(data.caseNum == 0) callback(new Error('请填写正确单数'));
+                        count+=data.caseNum;
+                    });
+                    if(count != this.filterTotal) {
+                        let msg = '已分配数量与未分配数量不符' + '(剩余'+ (this.filterTotal-count) +'单未分配)';
+                        callback(new Error(msg));
+                    }
+                }
+                callback();
+            };
+            var validateHandoutTotal = (rule, value, callback) => {
+                if (this.filterTotal == -1) {
+                    callback(new Error('请先点击"查看case总数"'));
+                }
+                if (!value) {
+                    callback(new Error('输入数量'));
+                } else if(value > this.filterTotal) {
+                    callback(new Error('数量不得超过case总数'));
+                } else if(value <= 0) {
+                    callback(new Error('请合理填写分配数量'));
+                } else {
+                    callback()
+                }
+            };
+            // 表单检验项end
+
+            // 数据
             return {
+                rules: {
+                    handout_total: [
+                        { validator: validateHandoutTotal, trigger: 'blur' }
+                    ],
+                    handout_type: [
+                        { validator: validateHandoutType, trigger: 'blur' }
+                    ]
+                },
                 searchID: '',
                 filter: {
                     visible: true,
@@ -305,6 +351,8 @@
                     comment_result: ["1","0","-1"],
                     problem_type: '0',
                     service_type: '0',
+                    // upon has be handle with Function getCondition
+                    handout_total: null,
                     handout_type: '0',
                     handout_worker: [],
                     handout_data: [
@@ -314,7 +362,7 @@
                         }
                     ]
                 },
-                filterTotal: 100,
+                filterTotal: -1,
                 caseTotal: 100,
                 loading: true,
                 initData: {
@@ -348,7 +396,13 @@
                 if(this.filter.workline != 0) condition.work_line = this.filter.workline;
                 if(this.filter.createUser != 0) condition.created_user = this.filter.createUser;
                 if(this.filter.testWorker != 0) condition.worker_id = this.filter.testWorker;
-                if(this.filter.time !== '') condition.created_time = this.filter.time;
+                if(this.filter.time !== '') {
+                    condition.created_time = ['',''];
+                    let res = this.filter.time;
+                    console.log(res);
+                    condition.created_time[0] = new Date(res[0].getTime() + 24 * 60 * 60 * 1000);
+                    condition.created_time[1] = new Date(res[1].getTime() + 48 * 60 * 60 * 1000);
+                }
 
                 let listArr = await getCaseData({condition: condition});
 
@@ -390,6 +444,10 @@
             // Dialog中手动分配的添加按钮
             addArrs: function() {
                 this.dialog.handout_data.push({'worker_id':'','caseNum':0});
+            },
+            // Dialog中手动分配的删除按钮
+            deleArrs: function(index) {
+                this.dialog.handout_data.splice(index,1);
             },
             // 重置Dialog中搜索条件
             resetDialog: function() {
@@ -474,12 +532,43 @@
                         be_test_team: item.be_test_team
                     });
                 });
-            }
+            },
+            // handoutCase
+            handoutCaseFunction: async function() {
+                await this.$refs['dialogForm'].validate((valid) => {
+                    if (valid) {
+                        // pass
+                    } else {
+                        return false;
+                    }
+                });
+
+
+                let condition = this.dialog;
+
+                let rep = await filterHandout(condition);
+                if(rep.code == 200) {
+                    this.$message.success('发放质检单成功!');
+                    this.resetDialog();
+                }else{
+                    this.$message.error('发放质检单失败：'+rep.message);
+                }
+
+                this.dialog.visible = false;
+            },
         },
         watch: {
             path: function(val) {
+                this.searchID = '';
                 this.getInitData();
                 this.resetFilter();
+            },
+            searchID: function(val) {
+                if(val != "" && val!=null) {
+                    this.filter.visible = false;
+                }else{
+                    this.filter.visible = true;
+                }
             }
         },
         computed: {

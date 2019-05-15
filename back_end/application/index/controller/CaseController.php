@@ -53,12 +53,9 @@ class CaseController extends Controller {
         }
 
         $condition = $this->getCondition($req);
-
-//        halt($req);
-//        halt($condition);
+        $condition['status']=0;
 
         $result = $case_model->getDataWithCondition($condition);
-//        halt($result);
         if ($result['code'] == CODE_SUCCESS) {
             return apiReturn(200, 'ok', count($result['data']));
         }else {
@@ -68,7 +65,7 @@ class CaseController extends Controller {
 
     /**
      * 分配质检单
-     * @return \think\response\Json
+     * @return string
      */
     public function filterHandout() {
         $case_validate = new CaseValidate();
@@ -86,9 +83,71 @@ class CaseController extends Controller {
         }
 
         $condition = $this->getCondition($req);
+        $condition['status']=0; // 未分配的质检单
+        $handout_total = $req['handout_total'];
 
         $result = $case_model->getDataWithCondition($condition);
-        // TODO 分配质检单 记得带上创建时间和创建人id
+        if($result['code']==CODE_SUCCESS) {
+            // 分配质检单 带上创建时间和创建人id
+            $data = $result['data']->toArray();
+            $size = count($data);
+            $now = time();
+            if($req['handout_type']==0) {
+                // 平均分配
+                $limit = $size / count($req['handout_worker']);
+                $total = 0;
+                $count = 0;
+                $user_count = 0;
+                foreach ($data as $key => $value) {
+                    $result = $case_model->setHandout($value['case_id'],session('user_id'),$req['handout_worker'][$user_count],$now);
+                    if($result['code']==CODE_ERROR) {
+                        return apiReturn(500,$result['message'],[]);
+                    }
+                    $count++;
+                    $total++;
+                    if($count==$limit) {
+                        $count=0;
+                        $user_count++;
+                    }
+                    if($user_count > count($req['handout_worker'])) {
+                        $user_count--;
+                    }
+                    if($total == $handout_total) {
+                        break;
+                    }
+                }
+            }else{
+                // 手动分配
+                $handout_data = $req['handout_data'];
+                // 处理删除空项
+                foreach ($handout_data as $key => $value) {
+                    if($value['worker_id']==0) {
+                        unset($handout_data[$key]);
+                    }
+                }
+                $count = 0;
+                $user_count = 0;
+                $total = 0;
+                foreach ($data as $key => $value) {
+                    $result = $case_model->setHandout($value['case_id'],session('user_id'),$handout_data[$user_count]['worker_id'],$now);
+                    if($result['code']==CODE_ERROR) {
+                        return apiReturn(500,$result['message'],[]);
+                    }
+                    $count++;
+                    $total++;
+                    if($count==$handout_data[$user_count]['caseNum']) {
+                        $user_count ++;
+                        $count = 0;
+                    }
+                    if($total == $handout_total) {
+                        break;
+                    }
+                }
+            }
+        }else{
+            return apiReturn(500,$result['message'],[]);
+        }
+        return apiReturn(200,'ok',null);
     }
 
     /**
@@ -270,6 +329,10 @@ class CaseController extends Controller {
         }
     }
 
+    /**
+     * 获取Case客户服务记录
+     * @return string
+     */
     public function getCaseMsg() {
         $case_model = new CaseModel();
         $case_validate = new CaseValidate();
