@@ -368,6 +368,50 @@ class CaseController extends Controller {
         }
     }
 
+    public function exportExcel() {
+        $case_model = new CaseModel();
+
+        $req = input('post.');
+        $result = null;
+
+        if(!$this->is_login) {
+            return apiReturn(403,'用户权限不足或未登录',[]);
+        }
+
+        try {
+            if(!isset($req['condition'])) {
+                return apiReturn(500,'缺少字段', []);
+            }
+
+            $condition = $req['condition'];
+
+            if(isset($condition['worker_id'])) {
+                if($condition['worker_id']==0) {
+                    $condition['worker_id'] = session('user_id');
+                }
+            }
+
+            $result = $case_model->getDataJoinUser($condition);
+
+            $arr = $result['data'];
+
+            // todo handle $arr
+
+            $excel_controller = new ExcelController();
+            $result = $excel_controller->genExcel($arr);
+
+            if($result['code']==200) {
+                exit($result['data']);
+//                return apiReturn(200,'ok',$result['data']);
+            }else{
+                return apiReturn(500,$result,[]);
+            }
+
+        } catch (ErrorException $errorException) {
+            return apiReturn(500,'系统错误', $errorException->getMessage());
+        }
+    }
+
     /**
      * 从请求中获取筛选条件
      * @param array $req

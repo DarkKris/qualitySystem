@@ -77,5 +77,18 @@ export const checkPrivilege = data => fetch('/CaseController/checkPrivilege', 'p
 
 export const setGrade = data => fetch('/CaseController/markCase', 'post', data);
 
+/**
+ * 分配质检单
+ * @param data
+ * @returns {Promise<*>}
+ */
 
 export const filterHandout = data => fetch('/CaseController/filterHandout', 'post', data);
+
+/**
+ * 导出excel
+ * @param data
+ * @returns {Promise<*>}
+ */
+
+export const exportExcel = data => fetch('/CaseController/exportExcel', 'post', data);

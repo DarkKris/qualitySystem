@@ -309,7 +309,7 @@
                     }
                     this.$message.success('成功提交');
                 }else{
-                    this.$message.error('发生错误，提交失败:');
+                    this.$message.error('发生错误，提交失败');
                 }
             },
             resetGrade: function() {

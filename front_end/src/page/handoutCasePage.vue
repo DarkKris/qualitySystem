@@ -253,7 +253,7 @@
 </template>
 
 <script>
-    import { getFilterCount, getBeTestTeam, getTestWorker, getCreater, getCaseData, filterHandout } from "../api/getData";
+    import { getFilterCount, getBeTestTeam, getTestWorker, getCreater, getCaseData, filterHandout, exportExcel } from "../api/getData";
 
     export default {
         name: "handout-case-page",
@@ -423,8 +423,33 @@
                 this.onFilter();
             },
             // 导出excel
-            excelOut: function() {
+            excelOut: async function() {
+                let condition = {};
 
+                if(this.path == '/admin/handoutCase') {
+                    condition = {qa_id: 'not null', status: 1};
+                }else{
+                    condition = {qa_id: 'not null', status: 2};
+                }
+
+                if(this.filter.beTestTeam != 0) condition.be_test_team = this.filter.beTestTeam;
+                if(this.filter.workline != 0) condition.work_line = this.filter.workline;
+                if(this.filter.createUser != 0) condition.created_user = this.filter.createUser;
+                if(this.filter.testWorker != 0) condition.worker_id = this.filter.testWorker;
+                if(this.filter.time !== '') {
+                    condition.created_time = ['',''];
+                    let res = this.filter.time;
+                    console.log(res);
+                    condition.created_time[0] = new Date(res[0].getTime() + 24 * 60 * 60 * 1000);
+                    condition.created_time[1] = new Date(res[1].getTime() + 48 * 60 * 60 * 1000);
+                }
+
+                let resp = await exportExcel({condition: condition});
+                if( resp.code == 200 ) {
+                    this.$message.success('导出成功，开始导出');
+                } else {
+                    this.$message.error('导出失败');
+                }
             },
             // 弹出dialog
             handoutClick: function() {
@@ -555,7 +580,7 @@
                 }
 
                 this.dialog.visible = false;
-            },
+            }
         },
         watch: {
             path: function(val) {
