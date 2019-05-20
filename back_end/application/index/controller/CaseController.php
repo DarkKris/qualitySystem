@@ -12,6 +12,8 @@ use app\index\model\UserModel;
 use app\index\validate\CaseValidate;
 use think\Controller;
 use think\exception\ErrorException;
+use think\facade\Env;
+require_once Env::get('root_path') . "extend/PHPExcel.php";
 
 class CaseController extends Controller {
 
@@ -395,19 +397,69 @@ class CaseController extends Controller {
 
             $arr = $result['data'];
 
-            // todo handle $arr
+            $requestArr = [];
+            foreach($arr as $key=>$atom) {
+                $grade = json_decode($atom['grade'],true);
+                $total = 0;
+                foreach($grade as $value) {
+                    $total += $value;
+                }
+
+                $grade_res = '合格';
+                if($total < 60) {
+                    $grade_res = '不合格';
+                }
+
+                $requestArr[$key][0] = $atom['qa_id'];
+                $requestArr[$key][1] = $atom['status']==0?'未分发':$atom['status']==1?'已分发':'已完结';
+                $requestArr[$key][2] = $atom['creater_name'];
+                $requestArr[$key][3] = $atom['created_time'];
+                $requestArr[$key][4] = $atom['worker_name'];
+                $requestArr[$key][5] = $atom['case_id'];
+                $requestArr[$key][6] = $atom['work_line']==1?'在线':'热线';
+                $requestArr[$key][7] = $atom['be_test_team'];
+                $requestArr[$key][8] = $atom['be_test_servicer'];
+                $requestArr[$key][9] = $atom['service_type']==1?'售后服务':$atom['service_type']==2?'运费问题':$atom['service_type']==3?'商家问题':'一般问题';
+                $requestArr[$key][10] = $atom['problem_type']==1?'活动客服':$atom['problem_type']==2?'假货客服':$atom['problem_type']==3?'高级客服':'运费客服';
+                $requestArr[$key][11] = $atom['comment_result']==-1?'不满意':$atom['comment_result']==0?'一般':'满意';
+                $requestArr[$key][12] = $grade_res; // 质检结果
+                $requestArr[$key][13] = $total; // 质检总分
+                $requestArr[$key][14] = $grade['ceremony'];
+                $requestArr[$key][15] = $grade['sysopt'];
+                $requestArr[$key][16] = $grade['messagetrans'];
+                $requestArr[$key][17] = $grade['pinpoint'];
+                $requestArr[$key][18] = $grade['quickhandle'];
+            }
 
             $excel_controller = new ExcelController();
-            $result = $excel_controller->genExcel($arr);
+            $result = $excel_controller->genExcel($requestArr);
 
             if($result['code']==200) {
-                exit($result['data']);
-//                return apiReturn(200,'ok',$result['data']);
+//                exit($result['data']);
+//                header('Content-Type: application/octet-stream');
+//                header('Accept-Range: bytes');
+//                header("Accept-Length: $file_size");
+//                header("Content-Disposition: attachment;filename=\"".str_replace("+", "%20", urlencode($result['data']['filename'])))."\"";
+//                header("Content-Disposition: attachment;filename=\"".$result['data']['filename']."\"");
+//                header('Cache-Control: max-age=0');
+//                header('Content-type:application/vnd.ms-excel;charset=utf-8;name="filter_data.xls"');
+//                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: inline;filename="filter_data.xls"');
+//                header('Cache-Control: max-age=0');
+                print "333";
+                exit;
+
+                $objWriter = \PHPExcel_IOFactory::createWriter($result['data']['obj'], 'Excel5');
+                $objWriter->save('php://output');
+//                return 'echo';
+                exit;
+                return apiReturn(200,'ok',$result['data']);
             }else{
                 return apiReturn(500,$result,[]);
             }
 
-        } catch (ErrorException $errorException) {
+        } catch (\Exception $errorException) {
             return apiReturn(500,'系统错误', $errorException->getMessage());
         }
     }
