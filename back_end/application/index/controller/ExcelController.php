@@ -73,12 +73,7 @@ class ExcelController extends Controller {
             $contents = file_get_contents($dir.'/'.$filename);
             $file_size = filesize($dir.'/'.$filename);
 
-            // download
-//            header('Content-type: application/octet-stream, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=GBK;');
-//            header('Accept-Range: bytes');
-//            header("Accept-Length: $file_size");
-//            header("Content-Disposition: attachment;filename=".$filename);
-//            header('Cache-Control: max-age=0');
+
 
             return ['code'=>200,'message'=>'ok','data'=>['filename'=>$filename,'obj'=>$excel]];
         } catch(\PHPExcel_Writer_Exception $e) {
@@ -86,5 +81,15 @@ class ExcelController extends Controller {
         } catch(\PHPExcel_Exception $e1) {
             return ['code'=>200,'message'=>$e1->getMessage(),'data'=>[]];
         }
+    }
+
+    public function download() {
+        $filename=Env::get('root_path')."excel/filter_data.xls";
+        $basename=pathinfo($filename);
+        header("Content-Type: image/png"); //指定下载文件类型的
+        header("Content-Disposition:attachment;filename=".$basename["basename"]);
+        //指定下载文件的描述信息
+        header("Content-Length:".filesize($filename));  //指定文件大小的
+        readfile($filename);//将内容输出，以便下载。
     }
 }

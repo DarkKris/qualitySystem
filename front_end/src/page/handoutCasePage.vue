@@ -446,6 +446,10 @@
 
                 let resp = await exportExcel({condition: condition});
                 if( resp.code == 200 ) {
+                    let routeUrl = this.$router.resolve({
+                        path: "/download",
+                    });
+                    window.open(routeUrl.href, '_blank');
                     this.$message.success('导出成功，开始导出');
                 } else {
                     this.$message.error('导出失败');

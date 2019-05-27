@@ -13,6 +13,8 @@ use app\index\validate\CaseValidate;
 use think\Controller;
 use think\exception\ErrorException;
 use think\facade\Env;
+use think\Response;
+
 require_once Env::get('root_path') . "extend/PHPExcel.php";
 
 class CaseController extends Controller {
@@ -435,26 +437,7 @@ class CaseController extends Controller {
             $result = $excel_controller->genExcel($requestArr);
 
             if($result['code']==200) {
-//                exit($result['data']);
-//                header('Content-Type: application/octet-stream');
-//                header('Accept-Range: bytes');
-//                header("Accept-Length: $file_size");
-//                header("Content-Disposition: attachment;filename=\"".str_replace("+", "%20", urlencode($result['data']['filename'])))."\"";
-//                header("Content-Disposition: attachment;filename=\"".$result['data']['filename']."\"");
-//                header('Cache-Control: max-age=0');
-//                header('Content-type:application/vnd.ms-excel;charset=utf-8;name="filter_data.xls"');
-//                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                header('Content-Type: application/octet-stream');
-                header('Content-Disposition: inline;filename="filter_data.xls"');
-//                header('Cache-Control: max-age=0');
-                print "333";
-                exit;
-
-                $objWriter = \PHPExcel_IOFactory::createWriter($result['data']['obj'], 'Excel5');
-                $objWriter->save('php://output');
-//                return 'echo';
-                exit;
-                return apiReturn(200,'ok',$result['data']);
+                return apiReturn(200,'ok',[]);
             }else{
                 return apiReturn(500,$result,[]);
             }

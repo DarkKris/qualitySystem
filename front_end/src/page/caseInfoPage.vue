@@ -314,11 +314,11 @@
             },
             resetGrade: function() {
                 this.caseGrade = {
-                    ceremony: 0,
-                    sysopt: 0,
-                    messagetrans: 0,
-                    pinpoint: 0,
-                    quickhandle: 0
+                    ceremony: 10,
+                    sysopt: 20,
+                    messagetrans: 20,
+                    pinpoint: 20,
+                    quickhandle: 30
                 };
             }
         },

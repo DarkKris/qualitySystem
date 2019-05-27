@@ -5,8 +5,8 @@ import LoginPage from '../page/loginPage'
 import adminPage from '../page/adminPage'
 import workerPage from '../page/workerPage'
 import handoutCasePage from '../page/handoutCasePage'
-// import completeCasePage from '../page/completeCasePage'
 import caseInfoPage from '../page/caseInfoPage'
+import download from '../page/download'
 
 Vue.use(VueRouter);
 
@@ -40,6 +40,10 @@ const routes = [
     {
         path: "/caseInfo/:id",
         component: caseInfoPage
+    },
+    {
+        path: "/download",
+        component: download
     }
 ];
 
