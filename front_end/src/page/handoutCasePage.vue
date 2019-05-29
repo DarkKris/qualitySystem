@@ -87,6 +87,7 @@
             </div>
 
             <div class="list-content">
+                <p class="statistics-p" v-if="$route.path == '/admin/completeCase'">合格数量:{{goodTotal}} &nbsp;&nbsp;不合格数量:{{ungood}} &nbsp;&nbsp;合格率:{{goodPercent}}</p>
                 <el-table
                         :data="tableData.filter(data => !searchID || data.qa_id == searchID)"
                         style="width: 100%;"
@@ -363,13 +364,14 @@
                     ]
                 },
                 filterTotal: -1,
+                goodTotal: 0,
                 caseTotal: 100,
                 loading: true,
                 initData: {
                     be_test_team: [],
                     test_worker: [],
                     creater: [],
-                }
+                },
             }
         },
         mounted() {
@@ -552,6 +554,9 @@
                 this.tableData = [];
 
                 data.forEach( item => {
+                    let grade = JSON.parse(item.grade);
+                    let grade_total = grade.ceremony + grade.messagetrans + grade.pinpoint + grade.quickhandle + grade.sysopt;
+                    if(grade_total>=60) this.goodTotal+=1;
                     this.tableData.push({
                         qa_id: item.qa_id,
                         work_line: this.workLineComputed(item.work_line),
@@ -603,12 +608,23 @@
         computed: {
             path: function() {
                 return this.$route.path;
+            },
+            ungood: function() {
+                return this.caseTotal - this.goodTotal;
+            },
+            goodPercent: function() {
+                return (this.goodTotal / this.caseTotal * 100) + "%";
             }
         }
     }
 </script>
 
 <style>
+    .statistics-p {
+        float: right;
+        font-size: 0.2em;
+    }
+
     .list-filter .el-form-item__label {
         text-align: right !important;
     }
