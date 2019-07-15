@@ -134,12 +134,20 @@
                             label="被质检团队"
                     >
                     </el-table-column>
+                    <el-table-column
+                            label="质检结果"
+                            v-if="$route.path == '/admin/completeCase'"
+                    >
+                        <template scope="scope">
+                            {{isGood(scope.row.grade)}}
+                        </template>
+                    </el-table-column>
                 </el-table>
                 <div class="list-footer" v-if="filter.visible">
                     <span>共 {{ caseTotal }} 条</span>
                     <el-pagination
                             :current-page.sync="currentPage"
-                            page-size="10"
+                            page-size="9999"
                             layout="prev, pager, next, jumper"
                             :total="caseTotal"
                     />
@@ -250,6 +258,18 @@
                 </div>
             </el-dialog>
         </keep-alive>
+        <el-dialog
+                title="错误"
+                :visible.sync="validateDialog.visible"
+                width="30%"
+                :before-close="handleClose"
+                append-to-body="true"
+        >
+            <span>{{validateDialog.msg}}</span>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="validateDialog.visible = false">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -260,26 +280,33 @@
         name: "handout-case-page",
         data() {
             // 表单检验项begin
-            var validateHandoutType = (rule, value, callback) => {
-                if (this.dialog.handout_type == 0) {
-                    // 平均分配
-                    if(this.dialog.handout_worker.length > this.filterTotal) {
-                        callback(new Error('(平均每人分配0单)请合理分配质检单'));
-                    }
-                } else {
-                    let count = 0;
-                    this.dialog.handout_data.forEach( (data, index) => {
-                        if(data.worker_id == '') callback(new Error('请选择质检员'));
-                        if(data.caseNum == 0) callback(new Error('请填写正确单数'));
-                        count+=data.caseNum;
-                    });
-                    if(count != this.filterTotal) {
-                        let msg = '已分配数量与未分配数量不符' + '(剩余'+ (this.filterTotal-count) +'单未分配)';
-                        callback(new Error(msg));
-                    }
-                }
-                callback();
-            };
+            // var validateHandoutType = (rule, value, callback) => {
+            //     console.log(this.dialog.handout_type);
+            //     if (this.dialog.handout_type == 0) {
+            //         // 平均分配
+            //         console.log("begin");
+            //         if(this.dialog.handout_worker.length > this.filterTotal) {
+            //             callback(new Error('(平均每人分配0单)请合理分配质检单'));
+            //         }else{
+            //             callback();
+            //         }
+            //         console.log("here");
+            //     } else {
+            //         let count = 0;
+            //         this.dialog.handout_data.forEach( (data, index) => {
+            //             if(data.worker_id == '') callback(new Error('请选择质检员'));
+            //             if(data.caseNum == 0) callback(new Error('请填写正确单数'));
+            //             count+=parseInt(data.caseNum);
+            //         });
+            //         if(count != this.dialog.handout_total) {
+            //             let msg = '已分配数量与未分配数量不符' + '(剩余'+ (this.dialog.handout_total-count) +'单未分配)';
+            //             callback(new Error(msg));
+            //         }else{
+            //             callback();
+            //         }
+            //     }
+            //     callback();
+            // };
             var validateHandoutTotal = (rule, value, callback) => {
                 if (this.filterTotal == -1) {
                     callback(new Error('请先点击"查看case总数"'));
@@ -301,10 +328,10 @@
                 rules: {
                     handout_total: [
                         { validator: validateHandoutTotal, trigger: 'blur' }
-                    ],
-                    handout_type: [
-                        { validator: validateHandoutType, trigger: 'blur' }
                     ]
+                    // handout_type: [
+                    //     { validator: validateHandoutType, trigger: 'blur' }
+                    // ]
                 },
                 searchID: '',
                 filter: {
@@ -372,6 +399,10 @@
                     test_worker: [],
                     creater: [],
                 },
+                validateDialog: {
+                    visible: false,
+                    msg: ""
+                }
             }
         },
         mounted() {
@@ -380,7 +411,7 @@
         methods: {
             // 搜索
             onSearch: function() {
-                // todo onSearch 用js方式进行数据筛选，避免与后端交互
+                // onSearch 用js方式进行数据筛选，避免与后端交互
             },
             // filter查询
             onFilter: async function() {
@@ -514,8 +545,8 @@
                 // 获取data列表
                 let listArr = await getCaseData(condition);
                 if(listArr.code==200) {
-                    this.drawTable(listArr.data);
                     this.caseTotal = listArr.data.length;
+                    this.drawTable(listArr.data);
                 }
 
                 // 获取被质检单位列表
@@ -551,24 +582,29 @@
             },
             // 渲染table
             drawTable: function(data) {
+                this.goodTotal = 0;
                 this.tableData = [];
 
                 data.forEach( item => {
-                    let grade = JSON.parse(item.grade);
-                    let grade_total = grade.ceremony + grade.messagetrans + grade.pinpoint + grade.quickhandle + grade.sysopt;
-                    if(grade_total>=60) this.goodTotal+=1;
+                    if(item.status == 2) {
+                        let grade = JSON.parse(item.grade);
+                        let grade_total = grade.ceremony + grade.messagetrans + grade.pinpoint + grade.quickhandle + grade.sysopt;
+                        if (grade_total >= 60) this.goodTotal += 1;
+                    }
                     this.tableData.push({
                         qa_id: item.qa_id,
                         work_line: this.workLineComputed(item.work_line),
                         created_time: new Date(item.created_time).toLocaleDateString(),
                         creater_name: item.creater_name,
                         be_test_servicer: item.be_test_servicer,
-                        be_test_team: item.be_test_team
+                        be_test_team: item.be_test_team,
+                        grade: item.grade
                     });
                 });
             },
             // handoutCase
             handoutCaseFunction: async function() {
+                let res = await this.myValidate();
                 await this.$refs['dialogForm'].validate((valid) => {
                     if (valid) {
                         // pass
@@ -577,6 +613,7 @@
                     }
                 });
 
+                if(res===false)return false;
 
                 let condition = this.dialog;
 
@@ -589,6 +626,45 @@
                 }
 
                 this.dialog.visible = false;
+            },
+            // validate
+            myValidate: function() {
+                if (this.dialog.handout_type == 0) {
+                    // 平均分配
+                    if(this.dialog.handout_worker.length > this.dialog.handout_total) {
+                        this.validateDialog.msg = "(平均每人分配0单)请合理分配质检单";
+                        this.validateDialog.visible = true;
+                        return false;
+                    }
+                } else {
+                    let count = 0;
+                    this.dialog.handout_data.forEach( (data, index) => {
+                        if(data.worker_id == '') callback(new Error('请选择质检员'));
+                        if(data.caseNum == 0) callback(new Error('请填写正确单数'));
+                        count+=parseInt(data.caseNum);
+                    });
+                    if(count != this.dialog.handout_total) {
+                        let msg = '已分配数量与未分配数量不符' + '(剩余'+ (this.dialog.handout_total-count) +'单未分配)';
+                        // callback(new Error(msg));
+                        this.validateDialog.msg = msg;
+                        this.validateDialog.visible = true;
+                        return false;
+                    }
+                }
+                return true;
+                // callback();
+            },
+            handleClose: function() {
+                this.validateDialog.visible = false;
+            },
+            isGood: function(grade) {
+                let obj = JSON.parse(grade);
+                let total = obj.ceremony + obj.sysopt + obj.messagetrans + obj.pinpoint + obj.quickhandle;
+                if(total>=60) {
+                    return "合格";
+                }else{
+                    return "不合格";
+                }
             }
         },
         watch: {
@@ -613,7 +689,7 @@
                 return this.caseTotal - this.goodTotal;
             },
             goodPercent: function() {
-                return (this.goodTotal / this.caseTotal * 100) + "%";
+                return (this.goodTotal / this.caseTotal * 100).toFixed(2) + "%";
             }
         }
     }
@@ -622,7 +698,8 @@
 <style>
     .statistics-p {
         float: right;
-        font-size: 0.2em;
+        font-size: 16px;
+        margin: 2px;
     }
 
     .list-filter .el-form-item__label {
@@ -742,5 +819,9 @@
     .handout-children {
         margin-left: 10px;
         margin-top: 5px;
+    }
+
+    .el-dialog {
+        z-index: 9999;
     }
 </style>

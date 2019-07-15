@@ -338,7 +338,7 @@
                 return isNaN(grade)?'_ _':grade;
             },
             testFinalComputed: function() {
-                if(!this.admin && !this.hasComplete)
+                if(!this.admin || !this.hasComplete)
                     return '_ _';
                 let total = this.totalGradeComputed;
                 if(total<60) {
